@@ -1,4 +1,4 @@
-package tests.java.lang;
+package aaron.ren.lang;
 
 public class Parent {
 }

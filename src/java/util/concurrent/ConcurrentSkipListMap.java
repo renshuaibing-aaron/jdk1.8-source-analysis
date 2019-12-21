@@ -807,7 +807,7 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
     /* ---------------- Insertion -------------- */
 
     /**
-     * Main insertion method.  Adds element if not present, or
+     * aaron.ren.Main insertion method.  Adds element if not present, or
      * replaces value if present and onlyIfAbsent is false.
      * @param key the key
      * @param value the value that must be associated with key
@@ -934,7 +934,7 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
     /* ---------------- Deletion -------------- */
 
     /**
-     * Main deletion method. Locates node, nulls value, appends a
+     * aaron.ren.Main deletion method. Locates node, nulls value, appends a
      * deletion marker, unlinks predecessor, removes associated index
      * nodes, and possibly reduces head index level.
      *

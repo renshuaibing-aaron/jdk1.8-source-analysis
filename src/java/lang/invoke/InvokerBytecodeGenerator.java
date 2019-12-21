@@ -88,7 +88,7 @@ class InvokerBytecodeGenerator {
     private static final MemberName.Factory MEMBERNAME_FACTORY = MemberName.getFactory();
     private static final Class<?> HOST_CLASS = LambdaForm.class;
 
-    /** Main constructor; other constructors delegate to this one. */
+    /** aaron.ren.Main constructor; other constructors delegate to this one. */
     private InvokerBytecodeGenerator(LambdaForm lambdaForm, int localsMapSize,
                                      String className, String invokerName, MethodType invokerType) {
         if (invokerName.contains(".")) {

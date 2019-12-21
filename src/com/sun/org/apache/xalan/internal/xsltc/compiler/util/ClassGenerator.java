@@ -36,7 +36,7 @@ import com.sun.org.apache.xalan.internal.xsltc.compiler.Stylesheet;
  * <tt>AbstractTranslet</tt>, i.e. any translet. Methods in this
  * class may be of the following kinds:
  *
- * 1. Main method: applyTemplates, implemented by intances of
+ * 1. aaron.ren.Main method: applyTemplates, implemented by intances of
  * <tt>MethodGenerator</tt>.
  *
  * 2. Named methods: for named templates, implemented by instances

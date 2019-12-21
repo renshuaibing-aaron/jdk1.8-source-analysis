@@ -919,7 +919,7 @@ public class EnvironmentCheck
 
     try
     {
-      final String ANT_VERSION_CLASS = "org.apache.tools.ant.Main";
+      final String ANT_VERSION_CLASS = "org.apache.tools.ant.aaron.ren.Main";
       final String ANT_VERSION_METHOD = "getAntVersion"; // noArgs
       final Class noArgs[] = new Class[0];
 

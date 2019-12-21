@@ -154,7 +154,7 @@ public class LinkedBlockingDeque<E>
     /** Maximum number of items in the deque */
     private final int capacity;
 
-    /** Main lock guarding all access */
+    /** aaron.ren.Main lock guarding all access */
     final ReentrantLock lock = new ReentrantLock();
 
     /** Condition for waiting takes */

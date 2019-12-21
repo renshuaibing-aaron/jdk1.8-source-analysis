@@ -39,7 +39,7 @@ extends SymbolTable {
     // Data
     //
 
-    /** Main symbol table. */
+    /** aaron.ren.Main symbol table. */
     protected SymbolTable fSymbolTable;
 
     //

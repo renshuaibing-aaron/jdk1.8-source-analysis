@@ -1,4 +1,4 @@
-package tests.java.lang;
+package aaron.ren.lang;
 
 import org.junit.Test;
 
@@ -24,9 +24,9 @@ public class ObjectTest {
         /**
          * 此方法是测试getClass()、.class 、getSuperclass()三者的区别
          * 运行结果为：
-         * 当前运行类为:class tests.java.lang.Son
-         * 通过class属性获取类的类对象：class tests.java.lang.Parent
-         * 当前运行类的继承的父类为：class tests.java.lang.Parent
+         * 当前运行类为:class aaron.ren.lang.Son
+         * 通过class属性获取类的类对象：class aaron.ren.lang.Parent
+         * 当前运行类的继承的父类为：class aaron.ren.lang.Parent
          */
         Son son = new Son();
         System.out.println("当前运行类为:" + son.getClass());

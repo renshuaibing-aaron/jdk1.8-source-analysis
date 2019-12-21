@@ -607,7 +607,7 @@ public class Throwable implements Serializable {
      * <p>An exception can have both a cause and one or more suppressed
      * exceptions:
      * <pre>
-     * Exception in thread "main" java.lang.Exception: Main block
+     * Exception in thread "main" java.lang.Exception: aaron.ren.Main block
      *  at Foo3.main(Foo3.java:7)
      *  Suppressed: Resource$CloseFailException: Resource ID = 2
      *          at Resource.close(Resource.java:26)
@@ -620,7 +620,7 @@ public class Throwable implements Serializable {
      * </pre>
      * Likewise, a suppressed exception can have a cause:
      * <pre>
-     * Exception in thread "main" java.lang.Exception: Main block
+     * Exception in thread "main" java.lang.Exception: aaron.ren.Main block
      *  at Foo4.main(Foo4.java:6)
      *  Suppressed: Resource2$CloseFailException: Resource ID = 1
      *          at Resource2.close(Resource2.java:20)

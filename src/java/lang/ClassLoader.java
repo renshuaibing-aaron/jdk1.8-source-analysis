@@ -131,7 +131,7 @@ import sun.security.util.SecurityConstants;
  *
  * <blockquote><pre>
  *   ClassLoader loader&nbsp;= new NetworkClassLoader(host,&nbsp;port);
- *   Object main&nbsp;= loader.loadClass("Main", true).newInstance();
+ *   Object main&nbsp;= loader.loadClass("aaron.ren.Main", true).newInstance();
  *       &nbsp;.&nbsp;.&nbsp;.
  * </pre></blockquote>
  *

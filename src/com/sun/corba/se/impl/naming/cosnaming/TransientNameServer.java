@@ -98,7 +98,7 @@ public class TransientNameServer
     }
 
     /**
-     * Main startup routine. It instantiates a TransientNameService
+     * aaron.ren.Main startup routine. It instantiates a TransientNameService
      * object and a BootstrapServer object, and then allows invocations to
      * happen.
      * @param args an array of strings representing the startup arguments.

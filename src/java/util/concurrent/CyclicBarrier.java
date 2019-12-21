@@ -193,7 +193,7 @@ public class CyclicBarrier {
     }
 
     /**
-     * Main barrier code, covering the various policies.
+     * aaron.ren.Main barrier code, covering the various policies.
      */
     private int dowait(boolean timed, long nanos)
         throws InterruptedException, BrokenBarrierException,

@@ -200,7 +200,7 @@ public class CachingParserPool {
         // Data
         //
 
-        /** Main grammar pool. */
+        /** aaron.ren.Main grammar pool. */
         private XMLGrammarPool fGrammarPool;
 
         //
@@ -345,7 +345,7 @@ public class CachingParserPool {
         // Data
         //
 
-        /** Main grammar pool. */
+        /** aaron.ren.Main grammar pool. */
         private XMLGrammarPool fGrammarPool;
 
         //

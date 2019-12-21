@@ -482,7 +482,7 @@ public class XPathMatcher {
     //       *never* check in this code to CVS without commenting it
     //       out. -Ac
 
-    /** Main program. */
+    /** aaron.ren.Main program. */
     /***
     public static void main(String[] argv) throws XNIException {
 

@@ -53,7 +53,7 @@ public class RETest
     REDebugCompiler compiler = new REDebugCompiler();
 
     /**
-     * Main program entrypoint.  If an argument is given, it will be compiled
+     * aaron.ren.Main program entrypoint.  If an argument is given, it will be compiled
      * and interactive matching will ensue.  If no argument is given, the
      * file RETest.txt will be used as automated testing input.
      * @param args Command line arguments (optional regular expression)

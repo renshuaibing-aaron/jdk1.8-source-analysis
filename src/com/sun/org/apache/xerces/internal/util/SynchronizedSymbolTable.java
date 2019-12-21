@@ -36,7 +36,7 @@ public final class SynchronizedSymbolTable
     // Data
     //
 
-    /** Main symbol table. */
+    /** aaron.ren.Main symbol table. */
     protected SymbolTable fSymbolTable;
 
     //

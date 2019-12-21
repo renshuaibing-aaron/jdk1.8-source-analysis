@@ -830,7 +830,7 @@ public abstract class CommunicatorServer
             }
 
             // ----------------------
-            // Main loop
+            // aaron.ren.Main loop
             // ----------------------
             while (!stopRequested) {
                 servedClientCount++;

@@ -2005,7 +2005,7 @@ public class XPath {
     // MAIN
     //
 
-    /** Main program entry. */
+    /** aaron.ren.Main program entry. */
     public static void main(String[] argv) throws Exception {
 
         for (int i = 0; i < argv.length; i++) {

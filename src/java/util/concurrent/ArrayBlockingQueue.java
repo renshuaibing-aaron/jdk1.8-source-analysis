@@ -107,7 +107,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
      * found in any textbook.
      */
 
-    /** Main lock guarding all access */
+    /** aaron.ren.Main lock guarding all access */
     final ReentrantLock lock;
 
     /** Condition for waiting takes */

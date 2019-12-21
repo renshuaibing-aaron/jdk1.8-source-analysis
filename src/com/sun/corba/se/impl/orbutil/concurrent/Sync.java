@@ -40,7 +40,7 @@
 package com.sun.corba.se.impl.orbutil.concurrent;
 
 /**
- * Main interface for locks, gates, and conditions.
+ * aaron.ren.Main interface for locks, gates, and conditions.
  * <p>
  * Sync objects isolate waiting and notification for particular
  * logical states, resource availability, events, and the like that are

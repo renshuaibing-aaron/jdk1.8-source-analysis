@@ -175,7 +175,7 @@ public final class Policies {
             }
     }
 
-    /** Main constructor used from POA::create_POA.  This need only be visible
+    /** aaron.ren.Main constructor used from POA::create_POA.  This need only be visible
     * within the POA package.
     */
     Policies(Policy[] policies, int id ) throws InvalidPolicy

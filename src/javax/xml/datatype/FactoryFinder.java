@@ -208,7 +208,7 @@ class FactoryFinder {
     }
 
     /**
-     * Finds the implementation Class object in the specified order.  Main
+     * Finds the implementation Class object in the specified order.  aaron.ren.Main
      * entry point.
      * @return Class object of factory, never null
      *

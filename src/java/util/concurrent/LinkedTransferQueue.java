@@ -1115,7 +1115,7 @@ public class LinkedTransferQueue<E> extends AbstractQueue<E>
     }
 
     /**
-     * Main implementation of remove(Object)
+     * aaron.ren.Main implementation of remove(Object)
      */
     private boolean findAndRemove(Object e) {
         if (e != null) {

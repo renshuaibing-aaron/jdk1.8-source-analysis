@@ -638,7 +638,7 @@ public class MetalIconFactory implements Serializable {
               // bottom right
             g.drawLine(iconSize-5,iconSize-5, iconSize-4,iconSize-5);
             g.drawLine(iconSize-5,iconSize-4, iconSize-5,iconSize-4);
-            // Main color
+            // aaron.ren.Main color
             g.setColor(mainItemColor);
               // Upper left to lower right
             g.drawLine(5,5, iconSize-6,iconSize-6); // g.drawLine(5,5, 10,10);

@@ -605,7 +605,7 @@ public abstract class AbstractTranslet implements Translet {
      ************************************************************************/
 
     /**
-     * Main transform() method - this is overridden by the compiled translet
+     * aaron.ren.Main transform() method - this is overridden by the compiled translet
      */
     public abstract void transform(DOM document, DTMAxisIterator iterator,
                                    SerializationHandler handler)

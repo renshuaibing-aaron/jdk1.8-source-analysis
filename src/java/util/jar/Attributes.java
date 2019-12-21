@@ -556,13 +556,13 @@ public class Attributes implements Map<Object,Object>, Cloneable {
         public static final Name CLASS_PATH = new Name("Class-Path");
 
         /**
-         * <code>Name</code> object for <code>Main-Class</code> manifest
+         * <code>Name</code> object for <code>aaron.ren.Main-Class</code> manifest
          * attribute used for launching applications packaged in JAR files.
-         * The <code>Main-Class</code> attribute is used in conjunction
+         * The <code>aaron.ren.Main-Class</code> attribute is used in conjunction
          * with the <code>-jar</code> command-line option of the
          * <tt>java</tt> application launcher.
          */
-        public static final Name MAIN_CLASS = new Name("Main-Class");
+        public static final Name MAIN_CLASS = new Name("aaron.ren.Main-Class");
 
         /**
          * <code>Name</code> object for <code>Sealed</code> manifest attribute

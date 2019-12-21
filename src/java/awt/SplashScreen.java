@@ -51,7 +51,7 @@ import sun.awt.image.SunWritableRaster;
  * For example, in the <code>manifest.mf</code> file:
  * <PRE>
  * Manifest-Version: 1.0
- * Main-Class: Test
+ * aaron.ren.Main-Class: Test
  * SplashScreen-Image: filename.gif
  * </PRE>
  * <P>

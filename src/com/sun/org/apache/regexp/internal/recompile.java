@@ -62,7 +62,7 @@ import com.sun.org.apache.regexp.internal.RESyntaxException;
 public class recompile
 {
     /**
-     * Main application entrypoint.
+     * aaron.ren.Main application entrypoint.
      * @param arg Command line arguments
      */
     static public void main(String[] arg)

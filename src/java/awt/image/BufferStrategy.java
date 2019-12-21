@@ -89,7 +89,7 @@ import java.awt.Image;
  * w.createBufferStrategy(2);
  * BufferStrategy strategy = w.getBufferStrategy();
  *
- * // Main loop
+ * // aaron.ren.Main loop
  * while (!done) {
  *     // Prepare for rendering the next frame
  *     // ...

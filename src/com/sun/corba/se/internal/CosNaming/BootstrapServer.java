@@ -51,7 +51,7 @@ public class BootstrapServer
     private ORB orb;
 
      /**
-     * Main startup routine for the bootstrap server.
+     * aaron.ren.Main startup routine for the bootstrap server.
      * It first determines the port on which to listen, checks that the
      * specified file is available, and then creates the resolver
      * that will be used to service the requests in the
