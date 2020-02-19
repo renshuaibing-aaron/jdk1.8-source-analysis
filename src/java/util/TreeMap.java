@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1997, 2014, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.util;
 
 import java.io.Serializable;
@@ -31,6 +6,8 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /**
+ * todo TreeMap 是红黑树的具体实现  实现这个接口 NavigableMap  说明它支持一系列的导航，具备针对给定搜索目标返回最接近匹配项的导航方法 。
+ *
  * A Red-Black tree based {@link NavigableMap} implementation.
  * The map is sorted according to the {@linkplain Comparable natural
  * ordering} of its keys, or by a {@link Comparator} provided at map
@@ -108,11 +85,10 @@ import java.util.function.Consumer;
  * @since 1.2
  */
 
-public class TreeMap<K,V>
-    extends AbstractMap<K,V>
-    implements NavigableMap<K,V>, Cloneable, java.io.Serializable
+public class TreeMap<K,V>     extends AbstractMap<K,V>    implements NavigableMap<K,V>, Cloneable, java.io.Serializable
 {
     /**
+     * todo 因为TreeMap是有序的，通过comparator接口我们可以对TreeMap的内部排序进行精密的控制
      * The comparator used to maintain order in this tree map, or
      * null if it uses the natural ordering of its keys.
      *
@@ -120,6 +96,7 @@ public class TreeMap<K,V>
      */
     private final Comparator<? super K> comparator;
 
+    //todo  TreeMap红-黑节点，为TreeMap的内部类
     private transient Entry<K,V> root;
 
     /**

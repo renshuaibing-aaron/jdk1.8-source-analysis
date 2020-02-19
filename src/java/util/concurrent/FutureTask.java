@@ -1,33 +1,5 @@
 /*
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
  * Written by Doug Lea with assistance from members of JCP JSR-166
  * Expert Group and released to the public domain, as explained at
  * http://creativecommons.org/publicdomain/zero/1.0/
@@ -115,10 +87,12 @@ public class FutureTask<V> implements RunnableFuture<V> {
     @SuppressWarnings("unchecked")
     private V report(int s) throws ExecutionException {
         Object x = outcome;
-        if (s == NORMAL)
+        if (s == NORMAL) {
             return (V)x;
-        if (s >= CANCELLED)
+        }
+        if (s >= CANCELLED) {
             throw new CancellationException();
+        }
         throw new ExecutionException((Throwable)x);
     }
 
@@ -185,24 +159,30 @@ public class FutureTask<V> implements RunnableFuture<V> {
     /**
      * @throws CancellationException {@inheritDoc}
      */
+    @Override
     public V get() throws InterruptedException, ExecutionException {
         int s = state;
-        if (s <= COMPLETING)
+        if (s <= COMPLETING) {
+            //主要的阻塞方法
             s = awaitDone(false, 0L);
+        }
         return report(s);
     }
 
     /**
      * @throws CancellationException {@inheritDoc}
      */
+    @Override
     public V get(long timeout, TimeUnit unit)
         throws InterruptedException, ExecutionException, TimeoutException {
-        if (unit == null)
+        if (unit == null) {
             throw new NullPointerException();
+        }
         int s = state;
         if (s <= COMPLETING &&
-            (s = awaitDone(true, unit.toNanos(timeout))) <= COMPLETING)
+            (s = awaitDone(true, unit.toNanos(timeout))) <= COMPLETING) {
             throw new TimeoutException();
+        }
         return report(s);
     }
 
@@ -227,7 +207,10 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * @param v the value
      */
     protected void set(V v) {
+
+        //这里用了一个cas设置FutureTask的state字段为COMPLETING，完成中的一个状态
         if (UNSAFE.compareAndSwapInt(this, stateOffset, NEW, COMPLETING)) {
+            //接着设置outcom为计算结果
             outcome = v;
             UNSAFE.putOrderedInt(this, stateOffset, NORMAL); // final state
             finishCompletion();
@@ -252,17 +235,19 @@ public class FutureTask<V> implements RunnableFuture<V> {
         }
     }
 
+    @Override
     public void run() {
-        if (state != NEW ||
-            !UNSAFE.compareAndSwapObject(this, runnerOffset,
-                                         null, Thread.currentThread()))
+        //设置runner为线程池中的当前线程
+        if (state != NEW || !UNSAFE.compareAndSwapObject(this, runnerOffset, null, Thread.currentThread())) {
             return;
+        }
         try {
             Callable<V> c = callable;
             if (c != null && state == NEW) {
                 V result;
                 boolean ran;
                 try {
+                    //后面执行call()方法
                     result = c.call();
                     ran = true;
                 } catch (Throwable ex) {
@@ -270,8 +255,10 @@ public class FutureTask<V> implements RunnableFuture<V> {
                     ran = false;
                     setException(ex);
                 }
-                if (ran)
+                if (ran) {
+                    //
                     set(result);
+                }
             }
         } finally {
             // runner must be non-null until state is settled to
@@ -280,8 +267,9 @@ public class FutureTask<V> implements RunnableFuture<V> {
             // state must be re-read after nulling runner to prevent
             // leaked interrupts
             int s = state;
-            if (s >= INTERRUPTING)
+            if (s >= INTERRUPTING) {
                 handlePossibleCancellationInterrupt(s);
+            }
         }
     }
 
@@ -362,6 +350,8 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * nulls out callable.
      */
     private void finishCompletion() {
+        //WaitNode主要是一个阻塞线程链表，即调用future.get()方法的线程链表。这里主要作用是注意唤醒这些线程，
+        // 通过LockSupport.unpark(t)唤醒。这里用阻塞线程链表，主要是考虑到可能有多个线程会调用future.get()阻塞
         // assert state > COMPLETING;
         for (WaitNode q; (q = waiters) != null;) {
             if (UNSAFE.compareAndSwapObject(this, waitersOffset, q, null)) {
@@ -372,8 +362,9 @@ public class FutureTask<V> implements RunnableFuture<V> {
                         LockSupport.unpark(t);
                     }
                     WaitNode next = q.next;
-                    if (next == null)
+                    if (next == null) {
                         break;
+                    }
                     q.next = null; // unlink to help gc
                     q = next;
                 }
@@ -392,6 +383,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * @param timed true if use timed waits
      * @param nanos time to wait, if timed
      * @return state upon completion
+     * 主要是阻塞线程，把当前线程放到阻塞线程链表中，通过LockSupport.park(this)阻塞当前线程，等待线程池里面的线程唤醒。唤醒之后，回到get()方法
      */
     private int awaitDone(boolean timed, long nanos)
         throws InterruptedException {

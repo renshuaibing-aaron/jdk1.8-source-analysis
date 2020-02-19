@@ -2,25 +2,6 @@
  * Copyright (c) 1994, 2013, Oracle and/or its affiliates. All rights reserved.
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
  */
 
 package java.lang;
@@ -108,8 +89,7 @@ import java.util.regex.PatternSyntaxException;
  * @since   JDK1.0
  */
 
-public final class String
-    implements java.io.Serializable, Comparable<String>, CharSequence {
+public final class String     implements java.io.Serializable, Comparable<String>, CharSequence {
     /** The value is used for character storage. */
     private final char value[];
 

@@ -1,38 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent.atomic;
 import java.util.function.IntUnaryOperator;
 import java.util.function.IntBinaryOperator;
@@ -58,6 +23,8 @@ public class AtomicInteger extends Number implements java.io.Serializable {
     private static final Unsafe unsafe = Unsafe.getUnsafe();
     private static final long valueOffset;
 
+
+    //当前值存放的内存地址可以通过valueOffset来确定。实际上是“value字段相对Java对象的起始地址的偏移量”
     static {
         try {
             valueOffset = unsafe.objectFieldOffset
@@ -65,6 +32,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
         } catch (Exception ex) { throw new Error(ex); }
     }
 
+    // 初始化值
     private volatile int value;
 
     /**

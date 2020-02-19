@@ -1,33 +1,5 @@
 /*
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
  * Written by Doug Lea with assistance from members of JCP JSR-166
  * Expert Group and released to the public domain, as explained at
  * http://creativecommons.org/publicdomain/zero/1.0/
@@ -115,13 +87,14 @@ public interface Future<V> {
      * @return {@code false} if the task could not be cancelled,
      * typically because it has already completed normally;
      * {@code true} otherwise
+     * 试图取消对此任务的执行
      */
     boolean cancel(boolean mayInterruptIfRunning);
 
     /**
      * Returns {@code true} if this task was cancelled before it completed
      * normally.
-     *
+     *如果在任务正常完成前将其取消，则返回 true。
      * @return {@code true} if this task was cancelled before it completed
      */
     boolean isCancelled();
@@ -132,7 +105,7 @@ public interface Future<V> {
      * Completion may be due to normal termination, an exception, or
      * cancellation -- in all of these cases, this method will return
      * {@code true}.
-     *
+     *如果任务已完成，则返回 true。
      * @return {@code true} if this task completed
      */
     boolean isDone();
@@ -147,6 +120,7 @@ public interface Future<V> {
      * exception
      * @throws InterruptedException if the current thread was interrupted
      * while waiting
+     *  如有必要，等待计算完成，然后获取其结果
      */
     V get() throws InterruptedException, ExecutionException;
 
@@ -163,6 +137,7 @@ public interface Future<V> {
      * @throws InterruptedException if the current thread was interrupted
      * while waiting
      * @throws TimeoutException if the wait timed out
+     * 如有必要，最多等待为使计算完成所给定的时间之后，获取其结果（如果结果可用）
      */
     V get(long timeout, TimeUnit unit)
         throws InterruptedException, ExecutionException, TimeoutException;

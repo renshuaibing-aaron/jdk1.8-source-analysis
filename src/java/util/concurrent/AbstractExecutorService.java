@@ -1,33 +1,5 @@
 /*
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
  * Written by Doug Lea with assistance from members of JCP JSR-166
  * Expert Group and released to the public domain, as explained at
  * http://creativecommons.org/publicdomain/zero/1.0/
@@ -70,6 +42,9 @@ import java.util.*;
  */
 public abstract class AbstractExecutorService implements ExecutorService {
 
+    // RunnableFuture 是用于获取执行结果的，我们常用它的子类 FutureTask
+    // 下面两个 newTaskFor 方法用于将我们的任务包装成 FutureTask 提交到线程池中执行
+
     /**
      * Returns a {@code RunnableFuture} for the given runnable and default
      * value.
@@ -106,9 +81,15 @@ public abstract class AbstractExecutorService implements ExecutorService {
      * @throws RejectedExecutionException {@inheritDoc}
      * @throws NullPointerException       {@inheritDoc}
      */
+    @Override
     public Future<?> submit(Runnable task) {
-        if (task == null) throw new NullPointerException();
+        if (task == null) {
+            throw new NullPointerException();
+        }
+        // 1. 将任务包装成 FutureTask
         RunnableFuture<Void> ftask = newTaskFor(task, null);
+        // 2. 交给执行器执行，execute 方法由具体的子类来实现
+        // 前面也说了，FutureTask 间接实现了Runnable 接口。
         execute(ftask);
         return ftask;
     }
@@ -117,10 +98,16 @@ public abstract class AbstractExecutorService implements ExecutorService {
      * @throws RejectedExecutionException {@inheritDoc}
      * @throws NullPointerException       {@inheritDoc}
      */
+    @Override
     public <T> Future<T> submit(Runnable task, T result) {
-        if (task == null) throw new NullPointerException();
+        if (task == null) {
+            throw new NullPointerException();
+        }
+        // 1. 将任务包装成 FutureTask
         RunnableFuture<T> ftask = newTaskFor(task, result);
+        // 2. 交给执行器执行
         execute(ftask);
+
         return ftask;
     }
 
@@ -128,13 +115,22 @@ public abstract class AbstractExecutorService implements ExecutorService {
      * @throws RejectedExecutionException {@inheritDoc}
      * @throws NullPointerException       {@inheritDoc}
      */
+    @Override
     public <T> Future<T> submit(Callable<T> task) {
-        if (task == null) throw new NullPointerException();
+        if (task == null) {
+            throw new NullPointerException();
+        }
+        // 1. 将任务包装成 FutureTask
         RunnableFuture<T> ftask = newTaskFor(task);
+        // 2. 交给执行器执行
         execute(ftask);
+
         return ftask;
     }
 
+    // 此方法目的：将 tasks 集合中的任务提交到线程池执行，任意一个线程执行完后就可以结束了
+    // 第二个参数 timed 代表是否设置超时机制，超时时间为第三个参数，
+    // 如果 timed 为 true，同时超时了还没有一个线程返回结果，那么抛出 TimeoutException 异常
     /**
      * the main mechanics of invokeAny.
      */
@@ -143,10 +139,14 @@ public abstract class AbstractExecutorService implements ExecutorService {
         throws InterruptedException, ExecutionException, TimeoutException {
         if (tasks == null)
             throw new NullPointerException();
+        // 任务数
         int ntasks = tasks.size();
         if (ntasks == 0)
             throw new IllegalArgumentException();
         ArrayList<Future<T>> futures = new ArrayList<Future<T>>(ntasks);
+        // ExecutorCompletionService 不是一个真正的执行器，参数 this 才是真正的执行器
+        // 它对执行器进行了包装，每个任务结束后，将结果保存到内部的一个 completionQueue 队列中
+        // 这也是为什么这个类的名字里面有个 Completion 的原因吧。
         ExecutorCompletionService<T> ecs =
             new ExecutorCompletionService<T>(this);
 
@@ -157,6 +157,7 @@ public abstract class AbstractExecutorService implements ExecutorService {
         // loop.
 
         try {
+            // 用于保存异常信息，此方法如果没有得到任何有效的结果，那么我们可以抛出最后得到的一个异常
             // Record exceptions so that if we fail to obtain any
             // result, we can throw the last exception we got.
             ExecutionException ee = null;

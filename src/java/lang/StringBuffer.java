@@ -1,26 +1,6 @@
 /*
  * Copyright (c) 1994, 2013, Oracle and/or its affiliates. All rights reserved.
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
  */
 
 package java.lang;
@@ -303,6 +283,7 @@ import java.util.Arrays;
 
     /**
      * @since 1.8
+     * 注意此方法 这里是同步方法 在多线程的情况下
      */
     @Override
     synchronized StringBuffer append(AbstractStringBuilder asb) {

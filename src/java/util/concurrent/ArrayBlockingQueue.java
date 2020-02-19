@@ -1,38 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -90,29 +55,36 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
      */
     private static final long serialVersionUID = -817911632652898426L;
 
+    // 用于存放元素的数组
     /** The queued items */
     final Object[] items;
 
     /** items index for next take, poll, peek or remove */
+    // 下一次读取操作的位置
     int takeIndex;
 
     /** items index for next put, offer, or add */
+    // 下一次写入操作的位置
     int putIndex;
 
     /** Number of elements in the queue */
+    // 队列中的元素数量
     int count;
 
     /*
      * Concurrency control uses the classic two-condition algorithm
      * found in any textbook.
+     * // 以下几个就是控制并发用的同步器
      */
 
     /** aaron.ren.Main lock guarding all access */
     final ReentrantLock lock;
 
+    //等待出队的条件
     /** Condition for waiting takes */
     private final Condition notEmpty;
 
+    //等待入队的条件
     /** Condition for waiting puts */
     private final Condition notFull;
 
@@ -159,8 +131,9 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         // assert items[putIndex] == null;
         final Object[] items = this.items;
         items[putIndex] = x;
-        if (++putIndex == items.length)
+        if (++putIndex == items.length) {
             putIndex = 0;
+        }
         count++;
         notEmpty.signal();
     }
@@ -176,11 +149,17 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         @SuppressWarnings("unchecked")
         E x = (E) items[takeIndex];
         items[takeIndex] = null;
-        if (++takeIndex == items.length)
+        /*
+         * 第一次出队的元素takeIndex==0,第二次出队的元素takeIndex==1
+         * (注意：这里出队之后，并没有将后面的数组元素向前移)
+         */
+        if (++takeIndex == items.length) {
             takeIndex = 0;
+        }
         count--;
-        if (itrs != null)
+        if (itrs != null) {
             itrs.elementDequeued();
+        }
         notFull.signal();
         return x;
     }
@@ -250,9 +229,11 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
      * @throws IllegalArgumentException if {@code capacity < 1}
      */
     public ArrayBlockingQueue(int capacity, boolean fair) {
-        if (capacity <= 0)
+        if (capacity <= 0) {
             throw new IllegalArgumentException();
+        }
         this.items = new Object[capacity];
+        //初始化类锁
         lock = new ReentrantLock(fair);
         notEmpty = lock.newCondition();
         notFull =  lock.newCondition();
@@ -385,6 +366,11 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         }
     }
 
+    /**
+     * 如果没有元素，直接返回null；如果有元素，将队头元素置null，但是要注意队头是随时变化的，并非一直是items[0]
+     * @return
+     */
+    @Override
     public E poll() {
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -395,26 +381,47 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         }
     }
 
+    @Override
     public E take() throws InterruptedException {
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
-            while (count == 0)
+            while (count == 0) {
                 notEmpty.await();
+            }
             return dequeue();
         } finally {
             lock.unlock();
         }
     }
 
+    /**
+     * 从对头删除一个元素，如果数组不空，出队；如果数组已空且已经超时，返回null；如果数组已空且时间未超时，则进入等待，直到出现以下三种情况：
+     * 被唤醒
+     * 等待时间超时
+     * 当前线程被中断
+     * @param timeout
+     * @param unit
+     * @return
+     * @throws InterruptedException
+     */
+    @Override
     public E poll(long timeout, TimeUnit unit) throws InterruptedException {
         long nanos = unit.toNanos(timeout);
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
             while (count == 0) {
-                if (nanos <= 0)
+                if (nanos <= 0) {
                     return null;
+                }
+                /*
+                 * 进行等待：
+                 * 在这个过程中可能发生三件事：
+                 * 1、被唤醒-->继续当前这个for(;;)循环
+                 * 2、超时-->继续当前这个for(;;)循环
+                 * 3、被中断-->之后直接执行catch部分的代码
+                 */
                 nanos = notEmpty.awaitNanos(nanos);
             }
             return dequeue();
@@ -423,6 +430,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         }
     }
 
+    @Override
     public E peek() {
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -440,6 +448,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
      *
      * @return the number of elements in this queue
      */
+    @Override
     public int size() {
         final ReentrantLock lock = this.lock;
         lock.lock();

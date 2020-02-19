@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.nio.channels;
 
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -30,8 +5,14 @@ import java.io.IOException;
 
 
 /**
+ * todo SelectionKey表示一个可选择通道与选择器关联的注册器，可以简单理解为一个token。
  * A token representing the registration of a {@link SelectableChannel} with a
  * {@link Selector}.
+ *
+ * todo SelectionKey在每次通道注册到选择器时创建。SelectionKey在其调用取消方法，或自己的通道
+ *  关闭，或关联的选择器关闭之前，都是有效。取消一个SelectionKey，不会立刻从选择器移除；
+ *  而是在下一次通选器选择操作的过程，取消的SelectionKey从SelectionKey集合移除是无效的。
+ *  我们可以通过#isValid判断一个SelectionKey是否有效。
  *
  * <p> A selection key is created each time a channel is registered with a
  * selector.  A key remains valid until it is <i>cancelled</i> by invoking its
@@ -44,17 +25,26 @@ import java.io.IOException;
  *
  * <a name="opsets"></a>
  *
+ * todo  SelectionKey包含两个操作集，每个操作集用一个Integer来表示，int值中的低四位的bit
+ *  用于表示通道支持的可选操作种类。
+ *
  * <p> A selection key contains two <i>operation sets</i> represented as
  * integer values.  Each bit of an operation set denotes a category of
  * selectable operations that are supported by the key's channel.
  *
  * <ul>
  *
+ * todo interest集合决定了选择器在下一个选择操作的过程中，操作事件是否是通道关注的。兴趣操作事件集
+ *  在SelectionKey创建时，初始化为注册选择器时的opt值，这个值可能通过interestOps(int)会改变。
+ *
  *   <li><p> The <i>interest set</i> determines which operation categories will
  *   be tested for readiness the next time one of the selector's selection
  *   methods is invoked.  The interest set is initialized with the value given
  *   when the key is created; it may later be changed via the {@link
  *   #interestOps(int)} method. </p></li>
+ *
+ *  todo ready集合表示通过选择器探测到通道已经准备就绪的操作事件。在SelectionKey创建时时，
+ *     就绪操作事件集值为0，在选择器的选择操作中可能会更新，但是不能直接的更新。
  *
  *   <li><p> The <i>ready set</i> identifies the operation categories for which
  *   the key's channel has been detected to be ready by the key's selector.
@@ -72,6 +62,11 @@ import java.io.IOException;
  * external events and by I/O operations that are invoked upon the
  * corresponding channel.
  *
+ * todo SelectionKey的ready集合表示一个通道已经准备就绪的操作事件，但不能保证在没有引起线程
+ *   阻塞的情况下，就绪的操作事件会被线程执行。在一个选择操作完成后，就绪操作事件集，
+ *    大部分情况下回立即，更新。如果外部的事件或在通道有IO操作，就绪操作事件集可能不准确。
+ *
+ *
  * <p> This class defines all known operation-set bits, but precisely which
  * bits are supported by a given channel depends upon the type of the channel.
  * Each subclass of {@link SelectableChannel} defines an {@link
@@ -80,6 +75,11 @@ import java.io.IOException;
  * attempt to set or test an operation-set bit that is not supported by a key's
  * channel will result in an appropriate run-time exception.
  *
+ *  todo SelectionKey定义了所有的操作事件，但是具体通道支持的操作事件依赖于具体的通道。
+ *   所有可选择的通道都可以通过validOps方法，判断一个操作事件是否被通道所支持。测试一个
+ *   不被通道所支持的通道，将会抛出相关的运行时异常。
+ *
+ *
  * <p> It is often necessary to associate some application-specific data with a
  * selection key, for example an object that represents the state of a
  * higher-level protocol and handles readiness notifications in order to
@@ -87,6 +87,10 @@ import java.io.IOException;
  * <i>attachment</i> of a single arbitrary object to a key.  An object can be
  * attached via the {@link #attach attach} method and then later retrieved via
  * the {@link #attachment() attachment} method.
+ *
+ * todo  如果需要经常关联一些应用的特殊数据到SelectionKey，比如一个object表示一个高层协议的
+ *   状态，object用于通知实现协议处理器。所以，SelectionKey支持通过attach方法将一个对象
+ *    附加的SelectionKey的attachment上。attachment可以通过#attachment方法进行修改。
  *
  * <p> Selection keys are safe for use by multiple concurrent threads.  The
  * operations of reading and writing the interest set will, in general, be
@@ -98,6 +102,10 @@ import java.io.IOException;
  * all.  In any case, a selection operation will always use the interest-set
  * value that was current at the moment that the operation began.  </p>
  *
+ *   todo SelectionKey多线程并发访问时，是线程安全的。读写兴趣操作事件集的操作都将同步到，
+ *      选择器的具体操作。同步器执行过程是依赖实现的：在一个本地实现版本中，如果一个选择操作正在
+ *     进行，读写兴趣操作事件集也许会不确定地阻塞；在一个高性能的实现版本中，可能会简单阻塞。
+ *      无论任何时候，一个选择操作在操作开始时，选择器总是占用着兴趣操作事件集的值。
  *
  * @author Mark Reinhold
  * @author JSR-51 Expert Group

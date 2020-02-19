@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.nio.channels;
 
 import java.io.IOException;
@@ -463,6 +438,7 @@ public abstract class SocketChannel
     /**
      * @throws  NotYetConnectedException
      *          If this channel is not yet connected
+     *          把从外部的信息 传到内存buffer里面  这里的buffer 代表的是内存区域
      */
     public abstract int read(ByteBuffer dst) throws IOException;
 

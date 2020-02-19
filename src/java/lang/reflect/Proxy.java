@@ -698,16 +698,18 @@ public class Proxy implements java.io.Serializable {
      *          argument or any of its elements are {@code null}, or
      *          if the invocation handler, {@code h}, is
      *          {@code null}
+     *
+     *  动态代理的核心方法
      */
     @CallerSensitive
-    public static Object newProxyInstance(ClassLoader loader,
-                                          Class<?>[] interfaces,
-                                          InvocationHandler h)
+    public static Object newProxyInstance(ClassLoader loader, Class<?>[] interfaces, InvocationHandler h)
         throws IllegalArgumentException
     {
+        //检验h不为空，h为空抛异常
         Objects.requireNonNull(h);
-
+        //接口的类对象拷贝一份
         final Class<?>[] intfs = interfaces.clone();
+        //进行一些安全性检查
         final SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             checkProxyAccess(Reflection.getCallerClass(), loader, intfs);
@@ -715,6 +717,10 @@ public class Proxy implements java.io.Serializable {
 
         /*
          * Look up or generate the designated proxy class.
+         */
+        /*
+         * Look up or generate the designated proxy class.
+         *  查询（在缓存中已经有）或生成指定的代理类的class对象。
          */
         Class<?> cl = getProxyClass0(loader, intfs);
 
@@ -725,7 +731,8 @@ public class Proxy implements java.io.Serializable {
             if (sm != null) {
                 checkNewProxyPermission(Reflection.getCallerClass(), cl);
             }
-
+            //得到代理类对象的构造函数，这个构造函数的参数由constructorParams指定
+            //参数constructorParames为常量值：private static final Class<?>[] constructorParams = { InvocationHandler.class };
             final Constructor<?> cons = cl.getConstructor(constructorParams);
             final InvocationHandler ih = h;
             if (!Modifier.isPublic(cl.getModifiers())) {
@@ -736,6 +743,7 @@ public class Proxy implements java.io.Serializable {
                     }
                 });
             }
+            //这里生成代理对象，传入的参数new Object[]{h}后面讲
             return cons.newInstance(new Object[]{h});
         } catch (IllegalAccessException|InstantiationException e) {
             throw new InternalError(e.toString(), e);

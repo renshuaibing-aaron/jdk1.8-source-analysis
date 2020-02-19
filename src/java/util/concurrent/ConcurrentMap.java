@@ -1,14 +1,3 @@
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +8,7 @@ import java.util.function.Function;
 /**
  * A {@link java.util.Map} providing thread safety and atomicity
  * guarantees.
+ *ConcurrentMap提供了原子的操作putIfAbsent，remove，replace
  *
  * <p>Memory consistency effects: As with other concurrent
  * collections, actions in a thread prior to placing an object into a
@@ -26,6 +16,9 @@ import java.util.function.Function;
  * <a href="package-summary.html#MemoryVisibility"><i>happen-before</i></a>
  * actions subsequent to the access or removal of that object from
  * the {@code ConcurrentMap} in another thread.
+ *
+ *内存一致性：与其他并发集合意向，线程有限执行put操，即put的操作happen-before
+ *其他线程读操作或者移除操作。
  *
  * <p>This interface is a member of the
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
@@ -103,7 +96,7 @@ public interface ConcurrentMap<K, V> extends Map<K, V> {
      * }</pre>
      *
      * except that the action is performed atomically.
-     *
+     * 如果Map不包含对应的Key则，执行put的操作，否则返回旧值
      * @implNote This implementation intentionally re-abstracts the
      * inappropriate default provided in {@code Map}.
      *

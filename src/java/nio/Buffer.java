@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.nio;
 
 import java.util.Spliterator;
@@ -35,10 +10,10 @@ import java.util.Spliterator;
  * buffer are its capacity, limit, and position: </p>
  *
  * <blockquote>
- *
+ *这个解释很准确
  *   <p> A buffer's <i>capacity</i> is the number of elements it contains.  The
  *   capacity of a buffer is never negative and never changes.  </p>
- *
+ *limit表示的是 第一个不能写或者不能读的元素  首先确定现在是什么模式
  *   <p> A buffer's <i>limit</i> is the index of the first element that should
  *   not be read or written.  A buffer's limit is never negative and is never
  *   greater than its capacity.  </p>
@@ -170,6 +145,7 @@ import java.util.Spliterator;
  * @author Mark Reinhold
  * @author JSR-51 Expert Group
  * @since 1.4
+ * 靠底层维护一个数组保证 可读可写 但是这个是线程不安全的
  */
 
 public abstract class Buffer {
@@ -183,8 +159,15 @@ public abstract class Buffer {
 
     // Invariants: mark <= position <= limit <= capacity
     private int mark = -1;
+
+    //指数组中下一个将要被读或者将要被写的元素的索引
     private int position = 0;
+
+    //实际上它是Buffer所维护的那个数组中的一个下标
+    //limit是第一个不能被读,或者第一个不能被写的元素的index
     private int limit;
+
+    //Buffer中元素的个数
     private int capacity;
 
     // Used only by direct buffers
@@ -322,7 +305,7 @@ public abstract class Buffer {
      * <p> This method does not actually erase the data in the buffer, but it
      * is named as if it did because it will most often be used in situations
      * in which that might as well be the case. </p>
-     *
+     *读取操作变成写入操作 这里的buffer的数据并不会删除 只是修改了一些值
      * @return  This buffer
      */
     public final Buffer clear() {
@@ -350,12 +333,12 @@ public abstract class Buffer {
      * <p> This method is often used in conjunction with the {@link
      * java.nio.ByteBuffer#compact compact} method when transferring data from
      * one place to another.  </p>
-     *
+     * 确切说 是写入操作 转成读取操作
      * @return  This buffer
      */
     public final Buffer flip() {
-        limit = position;
-        position = 0;
+        limit = position;  // 将 limit 设置为实际写入的数据数量
+        position = 0;  // 重置 position 为 0
         mark = -1;
         return this;
     }

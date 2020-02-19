@@ -2,27 +2,10 @@
  * Copyright (c) 1997, 2013, Oracle and/or its affiliates. All rights reserved.
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
 
+ */
+//todo  这里有个疑问为什么ThreadLocalMap 要是个map对象 这里是因为 每个ThreadLocal都属于一个线程 但是一个线程可能有多个ThreadLocal
+//  一个ThreadLocal对应一个线程，但是可没人说一个线程也只能有一个ThreadLocal。
 package java.lang;
 import java.lang.ref.*;
 import java.util.Objects;
@@ -30,6 +13,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 /**
+ * todo 该类提供了线程局部 (thread-local) 变量。这些变量不同于它们的普通对应物，因为访问某个变量（通过其 get 或 set 方法）
+ *  的每个线程都有自己的局部变量，它独立于变量的初始化副本。ThreadLocal 实例通常是类中的 private static 字段，
+ *  它们希望将状态与某一个线程（例如，用户 ID 或事务 ID）相关联。
+ *
  * This class provides thread-local variables.  These variables differ from
  * their normal counterparts in that each thread that accesses one (via its
  * {@code get} or {@code set} method) has its own, independently initialized
@@ -62,6 +49,10 @@ import java.util.function.Supplier;
  *     }
  * }
  * </pre>
+ *
+ * todo
+ *  每个线程都保持对其线程局部变量副本的隐式引用，只要线程是活动的并且 ThreadLocal 实例是可访问的；
+ *  在线程消失之后，其线程局部实例的所有副本都会被垃圾回收（除非存在对这些副本的其他引用）
  * <p>Each thread holds an implicit reference to its copy of a thread-local
  * variable as long as the thread is alive and the {@code ThreadLocal}
  * instance is accessible; after a thread goes away, all of its copies of
@@ -155,10 +146,16 @@ public class ThreadLocal<T> {
      * by an invocation of the {@link #initialValue} method.
      *
      * @return the current thread's value of this thread-local
+     *  获取ThreadLocal变量里的值
+     *   由于ThreadLocal变量引用 指向 ThreadLocalMap对象，
+     *   即获取ThreadLocalMap对象的值 = 该线程设置的存储在ThreadLocal变量的值
      */
     public T get() {
+        // 1. 获得当前线程
         Thread t = Thread.currentThread();
+        // 2. 获取该线程的ThreadLocalMap对象  获取线程的对象！！！
         ThreadLocalMap map = getMap(t);
+        // 3. 若该线程的ThreadLocalMap对象已存在，则直接获取该Map里的值；否则则通过初始化函数创建1个ThreadLocalMap对象
         if (map != null) {
             ThreadLocalMap.Entry e = map.getEntry(this);
             if (e != null) {
@@ -173,7 +170,7 @@ public class ThreadLocal<T> {
     /**
      * Variant of set() to establish initialValue. Used instead
      * of set() in case user has overridden the set() method.
-     *
+     *初始化ThreadLocal的值
      * @return the initial value
      */
     private T setInitialValue() {
@@ -195,14 +192,24 @@ public class ThreadLocal<T> {
      *
      * @param value the value to be stored in the current thread's copy of
      *        this thread-local.
-     */
+     * 设置ThreadLocal变量引用的值
+     *  ThreadLocal变量引用 指向 ThreadLocalMap对象，即设置ThreadLocalMap的值 = 该线程设置的存储在ThreadLocal变量的值
+     *  ThreadLocalMap的键Key = 当前ThreadLocal实例
+     *  ThreadLocalMap的值 = 该线程设置的存储在ThreadLocal变量的值
+     **/
     public void set(T value) {
+        // 1. 获得当前线程
         Thread t = Thread.currentThread();
+        // 2. 获取该线程的ThreadLocalMap对象 ->>分析1
         ThreadLocalMap map = getMap(t);
-        if (map != null)
+
+        // 3. 若该线程的ThreadLocalMap对象已存在，则替换该Map里的值；否则创建1个ThreadLocalMap对象
+        if (map != null) {
+            // 替换
             map.set(this, value);
-        else
+        } else {
             createMap(t, value);
+        }
     }
 
     /**
@@ -241,7 +248,12 @@ public class ThreadLocal<T> {
      * @param firstValue value for the initial entry of the map
      */
     void createMap(Thread t, T firstValue) {
+
+        // 新创建1个ThreadLocalMap对象 放入到 Thread类的threadLocals变量引用中：
+        // a. ThreadLocalMap的键Key = 当前ThreadLocal实例
+        // b. ThreadLocalMap的值 = 该线程设置的存储在ThreadLocal变量的值
         t.threadLocals = new ThreadLocalMap(this, firstValue);
+        // 即 threadLocals变量 属于 Thread类中 ->> 分析3
     }
 
     /**
@@ -286,6 +298,7 @@ public class ThreadLocal<T> {
     }
 
     /**
+     * todo 这个类是被线程所持有 并且这个类持有一个Entry数组  并且注意这个Entry继承弱引用
      * ThreadLocalMap is a customized hash map suitable only for
      * maintaining thread local values. No operations are exported
      * outside of the ThreadLocal class. The class is package private to
@@ -363,10 +376,18 @@ public class ThreadLocal<T> {
          * one when we have at least one entry to put in it.
          */
         ThreadLocalMap(ThreadLocal<?> firstKey, Object firstValue) {
+            // 默认长度16
             table = new Entry[INITIAL_CAPACITY];
+
+            // 得到下标
             int i = firstKey.threadLocalHashCode & (INITIAL_CAPACITY - 1);
+
+            // 创建一个entry对象并插入数组
             table[i] = new Entry(firstKey, firstValue);
+           // 设置长度属性为1
             size = 1;
+
+            //设置阀值== 16 * 2 / 3 == 10
             setThreshold(INITIAL_CAPACITY);
         }
 
@@ -401,6 +422,7 @@ public class ThreadLocal<T> {
         }
 
         /**
+         * 这个Map的get方法
          * Get the entry associated with key.  This method
          * itself handles only the fast path: a direct hit of existing
          * key. It otherwise relays to getEntryAfterMiss.  This is
@@ -411,15 +433,20 @@ public class ThreadLocal<T> {
          * @return the entry associated with key, or null if no such
          */
         private Entry getEntry(ThreadLocal<?> key) {
+            //计算hashCode
             int i = key.threadLocalHashCode & (table.length - 1);
             Entry e = table[i];
-            if (e != null && e.get() == key)
+            if (e != null && e.get() == key) {
                 return e;
-            else
+            } else {
                 return getEntryAfterMiss(key, i, e);
+            }
         }
 
         /**
+         *
+         * todo  该方法会循环所有的元素，直到找到 key 对应的 entry，如果发现了某个元素的 key 是 null，
+         *   顺手调用 expungeStaleEntry 方法清理 所有 key 为 null 的 entry
          * Version of getEntry method for use when key is not found in
          * its direct hash slot.
          *
@@ -446,6 +473,11 @@ public class ThreadLocal<T> {
         }
 
         /**
+         *
+         * todo HashMap 的Hash冲突方法是拉链法，即用链表来处理，而 ThreadLocalMap 处理Hash冲突采用的是线性探测法，
+         *   即这个槽不行，就换下一个槽，直到插入为止。但是该方法有一个问题，就是，如果整个数组都冲突了，就会不停的循环，
+         *   导致死循环，虽然这种几率很小。
+         *
          * Set the value associated with key.
          *
          * @param key the thread local object
@@ -460,28 +492,35 @@ public class ThreadLocal<T> {
 
             Entry[] tab = table;
             int len = tab.length;
+            // 根据 ThreadLocal 的 HashCode 得到对应的下标
             int i = key.threadLocalHashCode & (len-1);
 
+            // 首先通过下标找对应的entry对象，如果没有，则创建一个新的 entry对象
+            // 如果找到了，但key冲突了或者key是null，则将下标加一（加一后如果小于数组长度则使用该值，否则使用0），
+            // 再次尝试获取对应的 entry，如果不为null，则在循环中继续判断key 是否重复或者k是否是null
             for (Entry e = tab[i];
                  e != null;
                  e = tab[i = nextIndex(i, len)]) {
                 ThreadLocal<?> k = e.get();
-
+                // key 相同，则覆盖 value
                 if (k == key) {
                     e.value = value;
                     return;
                 }
-
+                // 如果key被 GC 回收了（因为是软引用），则创建一个新的 entry 对象填充该槽
                 if (k == null) {
                     replaceStaleEntry(key, value, i);
                     return;
                 }
             }
-
+            // 创建一个新的 entry 对象
             tab[i] = new Entry(key, value);
+            // 长度加一
             int sz = ++size;
-            if (!cleanSomeSlots(i, sz) && sz >= threshold)
+            // 如果没有清楚多余的entry 并且数组长度达到了阀值，则扩容
+            if (!cleanSomeSlots(i, sz) && sz >= threshold) {
                 rehash();
+            }
         }
 
         /**

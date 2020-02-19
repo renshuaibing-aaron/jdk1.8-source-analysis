@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -80,20 +80,20 @@ public class FontConfigManager {
      * Font.BOLD|Font.ITALIC  : "serif:bold:italic"
      */
     private static String[] fontConfigNames = {
-            "sans:regular:roman",
-            "sans:bold:roman",
-            "sans:regular:italic",
-            "sans:bold:italic",
+        "sans:regular:roman",
+        "sans:bold:roman",
+        "sans:regular:italic",
+        "sans:bold:italic",
 
-            "serif:regular:roman",
-            "serif:bold:roman",
-            "serif:regular:italic",
-            "serif:bold:italic",
+        "serif:regular:roman",
+        "serif:bold:roman",
+        "serif:regular:italic",
+        "serif:bold:italic",
 
-            "monospace:regular:roman",
-            "monospace:bold:roman",
-            "monospace:regular:italic",
-            "monospace:bold:italic",
+        "monospace:regular:roman",
+        "monospace:bold:roman",
+        "monospace:regular:italic",
+        "monospace:bold:italic",
     };
 
     /* This array has the array elements created in Java code and is
@@ -106,10 +106,6 @@ public class FontConfigManager {
      * of FontManager from the FontManagerFactory.
      */
     public FontConfigManager() {
-    }
-
-    public static String[] getFontConfigNames() {
-        return fontConfigNames;
     }
 
     /* Called from code that needs to know what are the AA settings
@@ -137,7 +133,7 @@ public class FontConfigManager {
                 return null;
             } else {
                 return SunHints.Value.get(SunHints.INTKEY_TEXT_ANTIALIASING,
-                        hint);
+                                          hint);
             }
         }
     }
@@ -182,7 +178,6 @@ public class FontConfigManager {
             t0 = System.nanoTime();
         }
 
-        String[] fontConfigNames = FontConfigManager.getFontConfigNames();
         FcCompFont[] fontArr = new FcCompFont[fontConfigNames.length];
 
         for (int i = 0; i< fontArr.length; i++) {
@@ -202,7 +197,7 @@ public class FontConfigManager {
                 if (FontUtilities.isLogging()) {
                     PlatformLogger logger = FontUtilities.getLogger();
                     logger.info("Fontconfig returned no font for " +
-                            fontArr[i].fcName);
+                                fontArr[i].fcName);
                 }
                 fontConfigFailed = true;
             } else if (anyFont == null) {
@@ -214,8 +209,9 @@ public class FontConfigManager {
             if (FontUtilities.isLogging()) {
                 PlatformLogger logger = FontUtilities.getLogger();
                 logger.info("Fontconfig returned no fonts at all.");
-                return;
             }
+            fontConfigFailed = true;
+            return;
         } else if (fontConfigFailed) {
             for (int i = 0; i< fontArr.length; i++) {
                 if (fontArr[i].firstFont == null) {
@@ -232,20 +228,20 @@ public class FontConfigManager {
 
             long t1 = System.nanoTime();
             logger.info("Time spent accessing fontconfig="
-                    + ((t1 - t0) / 1000000) + "ms.");
+                        + ((t1 - t0) / 1000000) + "ms.");
 
             for (int i = 0; i< fontConfigFonts.length; i++) {
                 FcCompFont fci = fontConfigFonts[i];
                 logger.info("FC font " + fci.fcName+" maps to family " +
-                        fci.firstFont.familyName +
-                        " in file " + fci.firstFont.fontFile);
+                            fci.firstFont.familyName +
+                            " in file " + fci.firstFont.fontFile);
                 if (fci.allFonts != null) {
                     for (int f=0;f<fci.allFonts.length;f++) {
                         FontConfigFont fcf = fci.allFonts[f];
                         logger.info("Family=" + fcf.familyName +
-                                " Style="+ fcf.styleStr +
-                                " Fullname="+fcf.fullName +
-                                " File="+fcf.fontFile);
+                                    " Style="+ fcf.styleStr +
+                                    " Fullname="+fcf.fullName +
+                                    " File="+fcf.fontFile);
                     }
                 }
             }
@@ -275,8 +271,8 @@ public class FontConfigManager {
         if (physFont != null) {
             if (isTTC) {
                 Font2D f2d = fm.findFont2D(fcInfo.firstFont.familyName,
-                        fcInfo.style,
-                        FontManager.NO_FALLBACK);
+                                           fcInfo.style,
+                                           FontManager.NO_FALLBACK);
                 if (f2d instanceof PhysicalFont) { /* paranoia */
                     return (PhysicalFont)f2d;
                 } else {
@@ -292,20 +288,20 @@ public class FontConfigManager {
          * point to the JRE font.
          */
         physFont = fm.findJREDeferredFont(fcInfo.firstFont.familyName,
-                fcInfo.style);
+                                          fcInfo.style);
 
         /* It is also possible the font file is on the "deferred" list,
          * in which case we can just initialise it now.
          */
         if (physFont == null &&
-                fm.isDeferredFont(fontFile) == true) {
+            fm.isDeferredFont(fontFile) == true) {
             physFont = fm.initialiseDeferredFont(fcInfo.firstFont.fontFile);
             /* use findFont2D to get the right font from TTC's */
             if (physFont != null) {
                 if (isTTC) {
                     Font2D f2d = fm.findFont2D(fcInfo.firstFont.familyName,
-                            fcInfo.style,
-                            FontManager.NO_FALLBACK);
+                                               fcInfo.style,
+                                               FontManager.NO_FALLBACK);
                     if (f2d instanceof PhysicalFont) { /* paranoia */
                         return (PhysicalFont)f2d;
                     } else {
@@ -332,7 +328,7 @@ public class FontConfigManager {
                 fontRank = Font2D.TYPE1_RANK;
             }
             physFont = fm.registerFontFile(fcInfo.firstFont.fontFile, null,
-                    fontFormat, true, fontRank);
+                                      fontFormat, true, fontRank);
         }
         return physFont;
     }
@@ -346,11 +342,16 @@ public class FontConfigManager {
         name = name.toLowerCase();
 
         initFontConfigFonts(false);
+        if (fontConfigFonts == null) {
+            // This avoids an immediate NPE if fontconfig look up failed
+            // but doesn't guarantee this is a recoverable situation.
+            return null;
+        }
 
         FcCompFont fcInfo = null;
         for (int i=0; i<fontConfigFonts.length; i++) {
             if (name.equals(fontConfigFonts[i].fcFamily) &&
-                    style == fontConfigFonts[i].style) {
+                style == fontConfigFonts[i].style) {
                 fcInfo = fontConfigFonts[i];
                 break;
             }
@@ -361,9 +362,9 @@ public class FontConfigManager {
 
         if (FontUtilities.isLogging()) {
             FontUtilities.getLogger()
-                    .info("FC name=" + name + " style=" + style +
-                            " uses " + fcInfo.firstFont.familyName +
-                            " in file: " + fcInfo.firstFont.fontFile);
+                          .info("FC name=" + name + " style=" + style +
+                                " uses " + fcInfo.firstFont.familyName +
+                                " in file: " + fcInfo.firstFont.fontFile);
         }
 
         if (fcInfo.compFont != null) {
@@ -375,10 +376,10 @@ public class FontConfigManager {
          */
         FontManager fm = FontManagerFactory.getInstance();
         CompositeFont jdkFont = (CompositeFont)
-                fm.findFont2D(fcInfo.jdkName, style, FontManager.LOGICAL_FALLBACK);
+            fm.findFont2D(fcInfo.jdkName, style, FontManager.LOGICAL_FALLBACK);
 
         if (fcInfo.firstFont.familyName == null ||
-                fcInfo.firstFont.fontFile == null) {
+            fcInfo.firstFont.fontFile == null) {
             return (fcInfo.compFont = jdkFont);
         }
 
@@ -400,7 +401,7 @@ public class FontConfigManager {
         }
 
         if (physFont == null ||
-                !fcInfo.firstFont.fontFile.equals(physFont.platName)) {
+            !fcInfo.firstFont.fontFile.equals(physFont.platName)) {
             physFont = registerFromFcInfo(fcInfo);
             if (physFont == null) {
                 return (fcInfo.compFont = jdkFont);
@@ -420,9 +421,9 @@ public class FontConfigManager {
         for (int i=0; i<fontConfigFonts.length; i++) {
             FcCompFont fc = fontConfigFonts[i];
             if (fc != fcInfo &&
-                    physFont.getFamilyName(null).equals(fc.firstFont.familyName) &&
-                    !fc.firstFont.fontFile.equals(physFont.platName) &&
-                    family.getFontWithExactStyleMatch(fc.style) == null) {
+                physFont.getFamilyName(null).equals(fc.firstFont.familyName) &&
+                !fc.firstFont.fontFile.equals(physFont.platName) &&
+                family.getFontWithExactStyleMatch(fc.style) == null) {
 
                 registerFromFcInfo(fontConfigFonts[i]);
             }

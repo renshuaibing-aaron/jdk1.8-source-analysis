@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 2003, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package com.sun.corba.se.impl.transport;
 
 import java.io.IOException;
@@ -59,11 +34,7 @@ import com.sun.corba.se.impl.orbutil.ORBUtility;
 /**
  * @author Harold Carr
  */
-class SelectorImpl
-    extends
-        Thread
-    implements
-        com.sun.corba.se.pept.transport.Selector
+class SelectorImpl   extends   Thread  implements   com.sun.corba.se.pept.transport.Selector
 {
     private ORB orb;
     private Selector selector;

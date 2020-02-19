@@ -21,7 +21,8 @@
  *
  *
  *
- */
+ *//*
+
 
 package java.util.jar;
 
@@ -61,3 +62,4 @@ class JavaUtilJarAccessImpl implements JavaUtilJarAccess {
         return jar.getManifestDigests();
     }
 }
+*/

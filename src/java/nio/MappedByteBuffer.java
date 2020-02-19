@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.nio;
 
 import java.io.FileDescriptor;
@@ -61,10 +36,10 @@ import sun.misc.Unsafe;
  * @author Mark Reinhold
  * @author JSR-51 Expert Group
  * @since 1.4
+ * 提供内存映射使用
  */
 
-public abstract class MappedByteBuffer
-    extends ByteBuffer
+public abstract class MappedByteBuffer    extends ByteBuffer
 {
 
     // This is a little bit backwards: By rights MappedByteBuffer should be a

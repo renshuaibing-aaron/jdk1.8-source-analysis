@@ -1,25 +1,5 @@
 /*
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
  */
 
 /*
@@ -64,7 +44,7 @@ import sun.security.util.SecurityConstants;
  *        out of other closure-like forms, so they can be used
  *        in execution methods requiring {@code Callable}.
  * </ul>
- *
+ *工具类
  * @since 1.5
  * @author Doug Lea
  */
@@ -168,10 +148,9 @@ public class Executors {
      * @return the newly created single-threaded Executor
      */
     public static ExecutorService newSingleThreadExecutor() {
+        //创建固定线程数量的的线程池
         return new FinalizableDelegatedExecutorService
-            (new ThreadPoolExecutor(1, 1,
-                                    0L, TimeUnit.MILLISECONDS,
-                                    new LinkedBlockingQueue<Runnable>()));
+            (new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>()));
     }
 
     /**
@@ -499,6 +478,7 @@ public class Executors {
 
     /**
      * A callable that runs given task and returns given result
+     * runnable被适配成了Callable是通过RunnableAdapter–实现了callable,引用了Runnable
      */
     static final class RunnableAdapter<T> implements Callable<T> {
         final Runnable task;

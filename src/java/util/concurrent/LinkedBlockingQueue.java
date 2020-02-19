@@ -1,33 +1,5 @@
 /*
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
  * Written by Doug Lea with assistance from members of JCP JSR-166
  * Expert Group and released to the public domain, as explained at
  * http://creativecommons.org/publicdomain/zero/1.0/
@@ -137,17 +109,34 @@ public class LinkedBlockingQueue<E> extends AbstractQueue<E>
     private final int capacity;
 
     /** Current number of elements */
+    /**
+     当前阻塞队列中的元素数量
+     PS:如果你看过ArrayBlockingQueue的源码,你会发现
+     ArrayBlockingQueue底层保存元素数量使用的是一个
+     普通的int类型变量。其原因是在ArrayBlockingQueue底层
+     对于元素的入队列和出队列使用的是同一个lock对象。而数
+     量的修改都是在处于线程获取锁的情况下进行操作，因此不
+     会有线程安全问题。
+     而LinkedBlockingQueue却不是，它的入队列和出队列使用的是两个
+     不同的lock对象,因此无论是在入队列还是出队列，都会涉及对元素数
+     量的并发修改，(之后通过源码可以更加清楚地看到)因此这里使用了一个原子操作类
+     来解决对同一个变量进行并发修改的线程安全问题。
+     */
     private final AtomicInteger count = new AtomicInteger();
 
     /**
      * Head of linked list.
      * Invariant: head.item == null
+     * LinkedBlockingQueue的头部具有一个不变性:
+     * 头部的元素总是为null，head.item==null
      */
     transient Node<E> head;
 
     /**
      * Tail of linked list.
      * Invariant: last.next == null
+     * LinkedBlockingQueue的尾部也具有一个不变性:
+     *即last.next==null
      */
     private transient Node<E> last;
 
@@ -404,30 +393,43 @@ public class LinkedBlockingQueue<E> extends AbstractQueue<E>
      * When using a capacity-restricted queue, this method is generally
      * preferable to method {@link BlockingQueue#add add}, which can fail to
      * insert an element only by throwing an exception.
-     *
+     *在队尾插入一个元素， 如果队列没满，立即返回true； 如果队列满了，立即返回false
      * @throws NullPointerException if the specified element is null
      */
+    @Override
     public boolean offer(E e) {
-        if (e == null) throw new NullPointerException();
+        if (e == null) {
+            throw new NullPointerException();
+        }
+        // 获取队列中的元素个数
         final AtomicInteger count = this.count;
-        if (count.get() == capacity)
+        // 队列满了
+        if (count.get() == capacity) {
             return false;
+        }
         int c = -1;
         Node<E> node = new Node<E>(e);
         final ReentrantLock putLock = this.putLock;
+
+        // 获取入队锁
         putLock.lock();
         try {
             if (count.get() < capacity) {
                 enqueue(node);
                 c = count.getAndIncrement();
-                if (c + 1 < capacity)
+               // 如果添加元素后的容量，还小于指定容量（说明在插入当前元素后，至少还可以再插一个元素）
+                if (c + 1 < capacity) {
+                    // 唤醒等待notFull条件的其中一个线程
                     notFull.signal();
+                }
             }
         } finally {
+            // 释放入队锁
             putLock.unlock();
         }
-        if (c == 0)
+        if (c == 0) {
             signalNotEmpty();
+        }
         return c >= 0;
     }
 

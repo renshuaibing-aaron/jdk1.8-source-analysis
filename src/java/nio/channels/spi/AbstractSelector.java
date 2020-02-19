@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.nio.channels.spi;
 
 import java.io.IOException;
@@ -66,8 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 1.4
  */
 
-public abstract class AbstractSelector
-    extends Selector
+public abstract class AbstractSelector   extends Selector
 {
 
     private AtomicBoolean selectorOpen = new AtomicBoolean(true);

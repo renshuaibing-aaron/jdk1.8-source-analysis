@@ -974,8 +974,9 @@ public abstract class AbstractQueuedLongSynchronizer
      */
     public final void acquire(long arg) {
         if (!tryAcquire(arg) &&
-            acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+            acquireQueued(addWaiter(Node.EXCLUSIVE), arg)) {
             selfInterrupt();
+        }
     }
 
     /**

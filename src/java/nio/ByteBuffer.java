@@ -1,41 +1,6 @@
-/*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 // -- This file was mechanically generated: Do not edit! -- //
 
 package java.nio;
-
-
-
-
-
-
-
-
-
-
 /**
  * A byte buffer.
  *
@@ -68,8 +33,6 @@ package java.nio;
  *   which allow a byte buffer to be viewed as a buffer containing values of
  *   some other primitive type; and </p></li>
  *
-
- *
  *   <li><p> Methods for {@link #compact compacting}, {@link
  *   #duplicate duplicating}, and {@link #slice slicing}
  *   a byte buffer.  </p></li>
@@ -79,21 +42,8 @@ package java.nio;
  * <p> Byte buffers can be created either by {@link #allocate
  * <i>allocation</i>}, which allocates space for the buffer's
  *
-
- *
  * content, or by {@link #wrap(byte[]) <i>wrapping</i>} an
  * existing byte array  into a buffer.
- *
-
-
-
-
-
-
-
- *
-
- *
  * <a name="direct"></a>
  * <h2> Direct <i>vs.</i> non-direct buffers </h2>
  *
@@ -189,30 +139,6 @@ package java.nio;
  *
  * <p> The byte order of a view buffer is fixed to be that of its byte buffer
  * at the time that the view is created.  </p>
- *
-
-*
-
-
-
-
-
-
-
-
-
-
-
-*
-
-
-
-
-
-
-
-
- *
 
  * <h2> Invocation chaining </h2>
 
@@ -234,34 +160,12 @@ package java.nio;
  *
  * <blockquote><pre>
  * bb.putInt(0xCAFEBABE).putShort(3).putShort(45);</pre></blockquote>
- *
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- *
- *
  * @author Mark Reinhold
  * @author JSR-51 Expert Group
  * @since 1.4
  */
 
-public abstract class ByteBuffer
-    extends Buffer
-    implements Comparable<ByteBuffer>
+public abstract class ByteBuffer   extends Buffer  implements Comparable<ByteBuffer>
 {
 
     // These fields are declared here rather than in Heap-X-Buffer in order to
@@ -327,11 +231,12 @@ public abstract class ByteBuffer
      * @return  The new byte buffer
      *
      * @throws  IllegalArgumentException
-     *          If the <tt>capacity</tt> is a negative integer
+     *          If the <tt>capacity</tt> is a negativHeapByteBuffere integer
      */
     public static ByteBuffer allocate(int capacity) {
-        if (capacity < 0)
+        if (capacity < 0) {
             throw new IllegalArgumentException();
+        }
         return new HeapByteBuffer(capacity, capacity);
     }
 
@@ -395,99 +300,6 @@ public abstract class ByteBuffer
     public static ByteBuffer wrap(byte[] array) {
         return wrap(array, 0, array.length);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Creates a new byte buffer whose content is a shared subsequence of
@@ -592,19 +404,6 @@ public abstract class ByteBuffer
      *          or not smaller than the buffer's limit
      */
     public abstract byte get(int index);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Absolute <i>put</i> method&nbsp;&nbsp;<i>(optional operation)</i>.
@@ -858,99 +657,6 @@ public abstract class ByteBuffer
     public final ByteBuffer put(byte[] src) {
         return put(src, 0, src.length);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     // -- Other stuff --
@@ -1227,216 +933,7 @@ public abstract class ByteBuffer
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // -- Other byte stuff: Access to binary data --
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

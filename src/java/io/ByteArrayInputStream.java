@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1994, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.io;
 
 /**
@@ -40,8 +15,7 @@ package java.io;
  * @see     java.io.StringBufferInputStream
  * @since   JDK1.0
  */
-public
-class ByteArrayInputStream extends InputStream {
+public  class ByteArrayInputStream extends InputStream {
 
     /**
      * An array of bytes that was provided

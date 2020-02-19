@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.nio.channels;
 
 import java.io.Closeable;
@@ -33,7 +8,7 @@ import java.util.Set;
 
 /**
  * A multiplexor of {@link SelectableChannel} objects.
- *
+ * todo Selector是可选择通道的多路复用器
  * <p> A selector may be created by invoking the {@link #open open} method of
  * this class, which will use the system's default {@link
  * java.nio.channels.spi.SelectorProvider selector provider} to
@@ -42,24 +17,32 @@ import java.util.Set;
  * method of a custom selector provider.  A selector remains open until it is
  * closed via its {@link #close close} method.
  *
+ * todo 选择器通过系统默认的选择器open实现创建，或者SelectorProvider的#openSelector方法。
+ *  在选择器没关闭之前，都处于打开状态
  * <a name="ks"></a>
  *
  * <p> A selectable channel's registration with a selector is represented by a
  * {@link SelectionKey} object.  A selector maintains three sets of selection
  * keys:
- *
+ *  todo 可选择通道注册到选择器的token，我们用SelectionKey表示。选择器主要维护3个选择key集合。
  * <ul>
  *
+ *     key set集合表示当前注册到选择的通道对应的选择key。这个集合通过keys方法返回
  *   <li><p> The <i>key set</i> contains the keys representing the current
  *   channel registrations of this selector.  This set is returned by the
  *   {@link #keys() keys} method. </p></li>
  *
+ *
+ * selected-key set集合表示在一个选择操作后，注册到选择器的通道已经准备就绪的
+ *  选择key集合。通过#selectedKeys方法返回，selected-key set集合总是key set的子集。
  *   <li><p> The <i>selected-key set</i> is the set of keys such that each
  *   key's channel was detected to be ready for at least one of the operations
  *   identified in the key's interest set during a prior selection operation.
  *   This set is returned by the {@link #selectedKeys() selectedKeys} method.
  *   The selected-key set is always a subset of the key set. </p></li>
  *
+ * cancelled-key集合，表示通道还没有反注册，但选择key已经取消的选择key。这个集合不能直接访问。
+ * cancelled-key集合总是key set的子集。
  *   <li><p> The <i>cancelled-key</i> set is the set of keys that have been
  *   cancelled but whose channels have not yet been deregistered.  This set is
  *   not directly accessible.  The cancelled-key set is always a subset of the
@@ -67,19 +50,28 @@ import java.util.Set;
  *
  * </ul>
  *
+ *在选择器创建时，三个集合都为空。
  * <p> All three sets are empty in a newly-created selector.
  *
+ * key set只会通过选择通道的注册方法添加选择key到key集合中。已取消的key在选择操作中被移除。
+ *  key set集合自己直接修改
  * <p> A key is added to a selector's key set as a side effect of registering a
  * channel via the channel's {@link SelectableChannel#register(Selector,int)
  * register} method.  Cancelled keys are removed from the key set during
  * selection operations.  The key set itself is not directly modifiable.
  *
+ * 无论是由于通道关闭，还是选择key取消，key被取消后，将会添加到选择器的取消key集合。
+ *  取消一个key将会使通道在下一次选择操作中，从选择器反注册，同时取消key将会从选择器的key集合中移除。
  * <p> A key is added to its selector's cancelled-key set when it is cancelled,
  * whether by closing its channel or by invoking its {@link SelectionKey#cancel
  * cancel} method.  Cancelling a key will cause its channel to be deregistered
  * during the next selection operation, at which time the key will removed from
  * all of the selector's key sets.
  *
+ * 选择操作将会把已经就绪的通道对应的选择key添加到 selected-key set 集合中。
+ *  通过set的remove和迭代器的remove操作，将会从取消key集合中，移除选择key。
+ *  除选择操作可以从key集合中移除key，其他的方式或方法不能从选择key中移除key。
+ *  key不能直接添加的可选择key集合。
  * <a name="sks"></a><p> Keys are added to the selected-key set by selection
  * operations.  A key may be removed directly from the selected-key set by
  * invoking the set's {@link java.util.Set#remove(java.lang.Object) remove}
@@ -242,33 +234,26 @@ public abstract class Selector implements Closeable {
     public abstract SelectorProvider provider();
 
     /**
+     * keys:保存了所有已注册且没有cancel的选择键,Set类型.可以通过selector.keys()获取
      * Returns this selector's key set.
-     *
      * <p> The key set is not directly modifiable.  A key is removed only after
      * it has been cancelled and its channel has been deregistered.  Any
      * attempt to modify the key set will cause an {@link
      * UnsupportedOperationException} to be thrown.
-     *
      * <p> The key set is <a href="#ksc">not thread-safe</a>. </p>
-     *
      * @return  This selector's key set
-     *
      * @throws  ClosedSelectorException
      *          If this selector is closed
      */
     public abstract Set<SelectionKey> keys();
 
     /**
+     * selectedKeys:已选择键集,即前一次操作期间,已经准备就绪的通道所对应的选择键.此集合为keys的子集.通过selector.selectedKeys()获取.
      * Returns this selector's selected-key set.
-     *
      * <p> Keys may be removed from, but not directly added to, the
      * selected-key set.  Any attempt to add an object to the key set will
      * cause an {@link UnsupportedOperationException} to be thrown.
-     *
      * <p> The selected-key set is <a href="#ksc">not thread-safe</a>. </p>
-     *
-     * @return  This selector's selected-key set
-     *
      * @throws  ClosedSelectorException
      *          If this selector is closed
      */

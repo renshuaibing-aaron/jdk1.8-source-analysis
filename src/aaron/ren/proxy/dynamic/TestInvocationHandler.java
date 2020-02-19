@@ -10,6 +10,7 @@ public class TestInvocationHandler implements InvocationHandler {
         this.target=target;
     }
 
+    //InvocationHandler接口的invoke方法（这个方法是一个回调方法）。 被代理类中的方法被调用时，实际上是调用的invoke方法
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         System.out.println("invoke begin");
