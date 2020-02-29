@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1994, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.io;
 
 import java.nio.channels.FileChannel;
@@ -210,6 +185,7 @@ class FileInputStream extends InputStream
     private native int read0() throws IOException;
 
     /**
+     * native方法来实现进行IO的调用
      * Reads a subarray as a sequence of bytes.
      * @param b the data to be written
      * @param off the start offset in the data

@@ -13,6 +13,8 @@ public class ProxyDynamic {
         System.out.println("================="+say);
 
         say.sayHello("my dear");
+
+        say.write();
     }
 
     /*

@@ -4,6 +4,7 @@ mysql中的
 页锁  会出现死锁
  
 悲观锁 乐观锁  
+说明 悲观锁和乐观锁的情况 悲观锁和乐观锁的情况 是锁表还是锁页
 
 不同的存储引擎 对应的锁级别
 
@@ -11,5 +12,5 @@ mysql中的
 https://mp.weixin.qq.com/s?__biz=MzU2Njg3OTU1Mg==&mid=2247483909&idx=1&sn=57ab448ea1b95bc32b84bffa1d38f8c7&chksm=fca4f62acbd37f3c129f783a98919a4d71c8a943a27a06a0d2667e41aac06ec7cab463bc4f71&scene=27#wechat_redirect
 
 
-什么条件下会出现死锁 ，因为MyISAM制支持表锁 所以针对死锁一般情况下都是由于InnoDB存储引擎引起的 
+什么条件下会出现死锁 ，因为MyISAM只支持表锁 所以针对死锁一般情况下都是由于InnoDB存储引擎引起的 
 一般出现在两个Session的加锁顺序不一致导致的

@@ -1,10 +1,7 @@
 package aaron.ren.zerocopy;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -23,6 +20,7 @@ public class Main {
         File input = new File("E:\\software\\CentOS-6.9-x86_64-bin-DVD1.iso");
         File tcOutput = new File("E:\\Download\\traditionalCopy.zip");
         File zcOutput = new File("E:\\Download\\zeroCopy.zip");
+
 
         traditionalCopy(input, tcOutput);
         ZeroCopy(input, zcOutput);

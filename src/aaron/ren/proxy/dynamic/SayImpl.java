@@ -5,4 +5,9 @@ public class SayImpl implements Say {
     public void sayHello(String words) {
         System.out.println("hello:" + words);
     }
+
+    @Override
+    public void write() {
+        System.out.println("writeqqwq:" );
+    }
 }

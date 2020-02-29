@@ -1,0 +1,7 @@
+1.tomcat 本身就是个java进程 启动一个JVM 怎么保证用户自己定义的类加载
+
+tomcat自定义了Common Catalian Shared等类加载器，其实就是用来加载Tomcat的自己的一些核心基础类库
+然后Tomcat 为每个部署在里面的Web应用都有一个对应的WebApp类加载器 负责加载我们部署的这个Web应用的类
+并且 Tomcat是打破双亲委派机制的 
+每一个WebApp负责加载自己对应的Web应用的class文件 也就是我们写好的某个系统打包好的war包里面的所有的class文件不会
+传导给上层的类加载器加载

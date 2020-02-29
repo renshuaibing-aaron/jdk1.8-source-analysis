@@ -3122,6 +3122,7 @@ public final class String     implements java.io.Serializable, Comparable<String
     }
 
     /**
+     * todo   这个方法是什么  返回在JVM虚拟机中存在的地址？？
      * Returns a canonical representation for the string object.
      * <p>
      * A pool of strings, initially empty, is maintained privately by the
