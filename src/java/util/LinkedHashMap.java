@@ -6,6 +6,12 @@ import java.util.function.BiFunction;
 import java.io.IOException;
 
 /**
+ * todo
+ *  为什么用这个类进行LRU算法的实现
+ *  默认有序的  默认是按照插入 顺序  根据accessOrder 这个字段设置是否按照插入排序还是访问排序
+ *   https://www.jianshu.com/p/8f4f58b4b8ab
+ *   底层的原理是一个双向链表 这里面在插入的时候进行重新 排序
+ *
 
  * <p>Hash table and linked list implementation of the <tt>Map</tt> interface,
  * with predictable iteration order.  This implementation differs from
@@ -136,9 +142,7 @@ import java.io.IOException;
  * @see     Hashtable
  * @since   1.4
  */
-public class LinkedHashMap<K,V>
-    extends HashMap<K,V>
-    implements Map<K,V>
+public class LinkedHashMap<K,V>  extends HashMap<K,V>  implements Map<K,V>
 {
 
     /*
@@ -163,6 +167,7 @@ public class LinkedHashMap<K,V>
      */
 
     /**
+     * 一个支持指向前后节点的Node子类
      * HashMap.Node subclass for normal LinkedHashMap entries.
      */
     static class Entry<K,V> extends HashMap.Node<K,V> {
@@ -175,16 +180,21 @@ public class LinkedHashMap<K,V>
     private static final long serialVersionUID = 3801124242820219131L;
 
     /**
+     * 头节点
      * The head (eldest) of the doubly linked list.
      */
     transient LinkedHashMap.Entry<K,V> head;
 
     /**
+     * 尾节点
      * The tail (youngest) of the doubly linked list.
      */
     transient LinkedHashMap.Entry<K,V> tail;
 
     /**
+     * 是否按照访问的顺序
+     * true ：按照 key-value 的访问顺序进行访问
+     * false ：按照 key-value 的插入顺序进行访问
      * The iteration ordering method for this linked hash map: <tt>true</tt>
      * for access-order, <tt>false</tt> for insertion-order.
      *

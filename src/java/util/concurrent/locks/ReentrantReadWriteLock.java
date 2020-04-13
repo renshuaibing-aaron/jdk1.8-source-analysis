@@ -1,10 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent.locks;
 import java.util.concurrent.TimeUnit;
 import java.util.Collection;
@@ -184,12 +177,13 @@ import java.util.Collection;
  * @since 1.5
  * @author Doug Lea
  */
-public class ReentrantReadWriteLock
-        implements ReadWriteLock, java.io.Serializable {
+public class ReentrantReadWriteLock   implements ReadWriteLock, java.io.Serializable {
     private static final long serialVersionUID = -6992448646407690164L;
-    /** Inner class providing readlock */
+
+    /** Inner class providing readlock  读锁*/
     private final ReentrantReadWriteLock.ReadLock readerLock;
-    /** Inner class providing writelock */
+
+    /** Inner class providing writelock 写锁*/
     private final ReentrantReadWriteLock.WriteLock writerLock;
     /** Performs all synchronization mechanics */
     final Sync sync;
@@ -214,7 +208,9 @@ public class ReentrantReadWriteLock
         writerLock = new WriteLock(this);
     }
 
+    @Override
     public ReentrantReadWriteLock.WriteLock writeLock() { return writerLock; }
+    @Override
     public ReentrantReadWriteLock.ReadLock  readLock()  { return readerLock; }
 
     /**
@@ -224,7 +220,9 @@ public class ReentrantReadWriteLock
     abstract static class Sync extends AbstractQueuedSynchronizer {
         private static final long serialVersionUID = 6317671515068378041L;
 
+
         /*
+            高16位表示读 低16位表示写
          * Read vs write count extraction constants and functions.
          * Lock state is logically divided into two unsigned shorts:
          * The lower one representing the exclusive (writer) lock hold count,
@@ -236,8 +234,11 @@ public class ReentrantReadWriteLock
         static final int MAX_COUNT      = (1 << SHARED_SHIFT) - 1;
         static final int EXCLUSIVE_MASK = (1 << SHARED_SHIFT) - 1;
 
+        //获取读状态锁的线程数量   其实就是获取读状态无符号补 0 右移 16 位
         /** Returns the number of shared holds represented in count  */
         static int sharedCount(int c)    { return c >>> SHARED_SHIFT; }
+
+        //获取写状态的锁的次数(可重入锁，获取锁的次数) 将高 16 位全部抹去
         /** Returns the number of exclusive holds represented in count  */
         static int exclusiveCount(int c) { return c & EXCLUSIVE_MASK; }
 
@@ -1462,6 +1463,7 @@ public class ReentrantReadWriteLock
      * ways that do not preserve unique mappings.
      */
     static final long getThreadId(Thread thread) {
+        //为什么不用Thread的非静态方法 getId  这个可以被子类修改 非final方法
         return UNSAFE.getLongVolatile(thread, TID_OFFSET);
     }
 

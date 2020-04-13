@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1999, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.lang.reflect;
 
 import java.lang.ref.WeakReference;
@@ -551,6 +526,7 @@ public class Proxy implements java.io.Serializable {
     }
 
     /**
+     * 这里可以看出 这里的代理工厂可以返回一个动态代理类的class文件
      * A factory function that generates, defines and returns the proxy class given
      * the ClassLoader and array of interfaces.
      */
@@ -635,12 +611,15 @@ public class Proxy implements java.io.Serializable {
 
             /*
              * Generate the specified proxy class.
+             * 这里动态的生成了class文件 这时候class文件在内存里面 (根据用户的情况有可能保存在磁盘上) 但是我的猜想是
+             * 类还没有加载
+             * 所以需要下面加载
              */
             byte[] proxyClassFile = ProxyGenerator.generateProxyClass(
                 proxyName, interfaces, accessFlags);
             try {
-                return defineClass0(loader, proxyName,
-                                    proxyClassFile, 0, proxyClassFile.length);
+                //这里是加载类的过程  利用这个loader加载类
+                return defineClass0(loader, proxyName, proxyClassFile, 0, proxyClassFile.length);
             } catch (ClassFormatError e) {
                 /*
                  * A ClassFormatError here means that (barring bugs in the
@@ -717,9 +696,6 @@ public class Proxy implements java.io.Serializable {
 
         /*
          * Look up or generate the designated proxy class.
-         */
-        /*
-         * Look up or generate the designated proxy class.
          *  查询（在缓存中已经有）或生成指定的代理类的class对象。
          */
         Class<?> cl = getProxyClass0(loader, intfs);
@@ -737,13 +713,14 @@ public class Proxy implements java.io.Serializable {
             final InvocationHandler ih = h;
             if (!Modifier.isPublic(cl.getModifiers())) {
                 AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                    @Override
                     public Void run() {
                         cons.setAccessible(true);
                         return null;
                     }
                 });
             }
-            //这里生成代理对象，传入的参数new Object[]{h}后面讲
+            //这里生成代理对象，传入的参数new Object[]{h}后面讲  这里可以看出 动态代理用的是反射的知识
             return cons.newInstance(new Object[]{h});
         } catch (IllegalAccessException|InstantiationException e) {
             throw new InternalError(e.toString(), e);

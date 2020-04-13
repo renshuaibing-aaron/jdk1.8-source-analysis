@@ -376,7 +376,8 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * @param timed true if use timed waits
      * @param nanos time to wait, if timed
      * @return state upon completion
-     * 主要是阻塞线程，把当前线程放到阻塞线程链表中，通过LockSupport.park(this)阻塞当前线程，等待线程池里面的线程唤醒。唤醒之后，回到get()方法
+     * 主要是阻塞线程，把当前线程放到阻塞线程链表中，通过LockSupport.park(this)阻塞当前线程，
+     * 等待线程池里面的线程唤醒。唤醒之后，回到get()方法
      */
     private int awaitDone(boolean timed, long nanos)
         throws InterruptedException {
@@ -391,13 +392,15 @@ public class FutureTask<V> implements RunnableFuture<V> {
 
             int s = state;
             if (s > COMPLETING) {
-                if (q != null)
+                if (q != null) {
                     q.thread = null;
+                }
                 return s;
             }
             else if (s == COMPLETING) // cannot time out yet
+            {
                 Thread.yield();
-            else if (q == null)
+            } else if (q == null)
                 q = new WaitNode();
             else if (!queued)
                 queued = UNSAFE.compareAndSwapObject(this, waitersOffset,
@@ -410,8 +413,9 @@ public class FutureTask<V> implements RunnableFuture<V> {
                 }
                 LockSupport.parkNanos(this, nanos);
             }
-            else
+            else {
                 LockSupport.park(this);
+            }
         }
     }
 

@@ -562,15 +562,18 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
      * @return {@code true} if thread should block
      */
     private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
+        // 获得前一个节点的等待状态
         int ws = pred.waitStatus;
-        if (ws == Node.SIGNAL)
+        if (ws == Node.SIGNAL)  //  Node.SIGNAL  -1
             /*
              * This node has already set status asking a release
              * to signal it, so it can safely park.
-             */ {
+             */
+            {
             return true;
         }
-        if (ws > 0) {
+        if (ws > 0) { // Node.CANCEL  则表明该线程的前一个节点已经等待超时或者被中断了，则需要从 CLH
+            // 队列中将该前一个节点删除掉，循环回溯，直到前一个节点状态 <= 0
             /*
              * Predecessor was cancelled. Skip over predecessors and
              * indicate retry.
@@ -579,7 +582,7 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
                 node.prev = pred = pred.prev;
             } while (pred.waitStatus > 0);
             pred.next = node;
-        } else {
+        } else { // 0 或者 Node.PROPAGATE  这里的意思是 如果这个节点的值是0或者是-3  就用CAS操作重新置为-1 在下次操作的时候获取
             /*
              * waitStatus must be 0 or PROPAGATE.  Indicate that we
              * need a signal, but don't park yet.  Caller will need to
@@ -627,22 +630,29 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
      * @return {@code true} if interrupted while waiting
      */
     final boolean acquireQueued(final Node node, int arg) {
+        // 记录是否获取同步状态成功
         boolean failed = true;
         try {
+            // 记录过程中，是否发生线程中断
             boolean interrupted = false;
+            //自旋过程，其实就是一个死循环而已
             for (;;) {
+                // 当前线程的前驱节点
                 final Node p = node.predecessor();
+                // 当前线程的前驱节点是头结点，且同步状态成功
                 if (p == head && tryAcquire(arg)) {
                     setHead(node);
                     p.next = null; // help GC
                     failed = false;
                     return interrupted;
                 }
+                // 获取失败，线程等待
                 if (shouldParkAfterFailedAcquire(p, node) && parkAndCheckInterrupt()) {
                     interrupted = true;
                 }
             }
         } finally {
+            // 获取同步状态发生异常，取消获取。
             if (failed) {
                 cancelAcquire(node);
             }
@@ -719,13 +729,17 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
      * @param arg the acquire argument
      */
     private void doAcquireShared(int arg) {
+        // 共享式节点
         final Node node = addWaiter(Node.SHARED);
         boolean failed = true;
         try {
             boolean interrupted = false;
             for (;;) {
+                // 前驱节点
                 final Node p = node.predecessor();
+                // 如果其前驱节点，获取同步状态
                 if (p == head) {
+                    // 尝试获取同步
                     int r = tryAcquireShared(arg);
                     if (r >= 0) {
                         setHeadAndPropagate(node, r);
@@ -956,6 +970,7 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
     }
 
     /**
+     * 独占式的获取同步状态  但是不支持中断 获取失败加入CLH队列 后续对该线程进行中断无法响应  即不会从队列移除
      * Acquires in exclusive mode, ignoring interrupts.  Implemented
      * by invoking at least once {@link #tryAcquire},
      * returning on success.  Otherwise the thread is queued, possibly
@@ -970,14 +985,15 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
      //公平锁的加锁过程
     public final void acquire(int arg) {
 
-        boolean firstLogic = !tryAcquire(arg);  //尝试加锁  只有加锁失败 if循环才往下走
+        boolean firstLogic = !tryAcquire(arg);  //尝试加锁  只有加锁失败 if循环才往下走  这个方法需要子类自己去实现
         // 加锁失败的逻辑  进入park  然后进行加入队列里面
-        //下面这一行是把当前线程封装成一个NODE
-        Node node = addWaiter(Node.EXCLUSIVE);
-        boolean secondLogic = acquireQueued(node, arg);
+        //下面这一行是把当前线程封装成一个NODE 将当前线程加入到CLH队列的尾部 并且方法参数是用的Node.EXCLUSIVE ，表示独占模式
+        Node node = addWaiter(Node.EXCLUSIVE);  //这里只是加到队列的尾部
+        boolean secondLogic = acquireQueued(node, arg); //自旋的获取同步状态到直到成功  注意这个方法返回的是boolean  表示中断状态
+         //如果为true的话 表示线程有中断并且这个方法会清理线程的中断的标识？？？
 
         if ( firstLogic&&secondLogic) {
-            //自我中断  到这里显示 当前线程被中断
+            //自我中断  到这里显示 当前线程被中断  恢复线程中断的标识
             selfInterrupt();
         }
     }
@@ -1058,6 +1074,7 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
     }
 
     /**
+     * 共享式获取状态
      * Acquires in shared mode, ignoring interrupts.  Implemented by
      * first invoking at least once {@link #tryAcquireShared},
      * returning on success.  Otherwise the thread is queued, possibly
@@ -1069,8 +1086,10 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
      *        and can represent anything you like.
      */
     public final void acquireShared(int arg) {
-        if (tryAcquireShared(arg) < 0)
-            doAcquireShared(arg);
+        int i = tryAcquireShared(arg); //需要子类自己实现 尝试获取同步状态 获取成功设置锁状态  返回大于等于0 否则失败 小于0
+        if ( i< 0) {
+            doAcquireShared(arg);  //自旋式获取锁
+        }
     }
 
     /**
@@ -1620,8 +1639,12 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
      */
     public class ConditionObject implements Condition, java.io.Serializable {
         private static final long serialVersionUID = 1173984872572414699L;
+
+        //条件队列首节点指针
         /** First node of condition queue. */
         private transient Node firstWaiter;
+
+        //条件队列尾节点指针
         /** Last node of condition queue. */
         private transient Node lastWaiter;
 
@@ -2208,12 +2231,15 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
         // 官方的描述是，其表示当前node的后继节点对应的线程需要被唤醒
         /** waitStatus value to indicate successor's thread needs unparking */
         static final int SIGNAL    = -1;
+
         /** waitStatus value to indicate thread is waiting on condition */
-        // 本文不分析condition，所以略过吧，下一篇文章会介绍这个
+        // 节点在等待队列中，节点线程等待在Condition上，当其他线程对Condition调用了signal()后，
+        // 该节点将会从等待队列中转移到同步队列中，加入到同步状态的获取中
         static final int CONDITION = -2;
         /**
          * waitStatus value to indicate the next acquireShared should
          * unconditionally propagate
+         * 表示下一次共享式同步状态获取，将会无条件地传播下去
          */
         static final int PROPAGATE = -3;
 
@@ -2291,6 +2317,17 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
         volatile Thread thread;
 
         /**
+         * nextWaiter 字段，Node 节点获取同步状态的模型( Mode )。#tryAcquire(int args) 和 #tryAcquireShared(int args) 方法，
+         * 分别是独占式和共享式获取同步状态。在获取失败时，它们都会调用 #addWaiter(Node mode) 方法入队。
+         * 而 nextWaiter 就是用来表示是哪种模式：
+         *
+         * SHARED 静态 + 不可变字段，枚举共享模式。
+         * EXCLUSIVE 静态 + 不可变字段，枚举独占模式。
+         * #isShared() 方法，判断是否为共享式获取同步状态。
+         */
+        /**
+         *
+         * todo 这个节点的意义？
          * Link to next node waiting on condition, or the special
          * value SHARED.  Because condition queues are accessed only
          * when holding in exclusive mode, we just need a simple
@@ -2299,6 +2336,8 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
          * re-acquire. And because conditions can only be exclusive,
          * we save a field by using special value to indicate shared
          * mode.
+         * 等待队列中的后续节点。如果当前节点是共享的，那么字段将是一个 SHARED 常量，
+         * 也就是说节点类型（独占和共享）和等待队列中的后续节点共用同一个字段
          */
         Node nextWaiter;
 
@@ -2310,6 +2349,8 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
         }
 
         /**
+         * 获得 Node 节点的前一个 Node 节点。在方法的内部，Node p = prev 的本地拷贝，
+         * 是为了避免并发情况下，prev 判断完 == null 时，恰好被修改，从而保证线程安全。
          * Returns previous node, or throws NullPointerException if null.
          * Use when predecessor cannot be null.  The null check could
          * be elided, but is present to help the VM.

@@ -20,7 +20,7 @@ public class JdkProxySourceClass {
             FileOutputStream out = null;
             try {
                 byte[] classFile = ProxyGenerator.generateProxyClass("$Proxy0", SayImpl.class.getInterfaces());
-                out = new FileOutputStream(filePath[0] + "$Proxy0.class");
+                out = new FileOutputStream(filePath[0]+"/jdkdynamic" + "$Proxy0.class");
                 out.write(classFile);
             } catch (Exception e) {
                 e.printStackTrace();

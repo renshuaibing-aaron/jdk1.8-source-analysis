@@ -1,2 +1,9 @@
 java nio相关知识放到netty里面
 
+
+2.一旦注册到Selector上，Channel将一直保持注册直到其被解除注册。在解除注册的时候会解除
+Selector分配给Channel的所有资源。 也就是SelectionKey在其调用SelectionKey#channel方法，
+或这个key所代表的channel 关闭，抑或此key所关联的Selector关闭之前，都是有效。我们在前面的文章
+分析中也知道，取消一个SelectionKey，不会立刻从Selector移除，它将被添加到Selector的cancelledKeys这个
+Set集合中，以便在下一次选择操作期间删除，
+我们可以通过java.nio.channels.SelectionKey#isValid判断一个SelectionKey是否有效

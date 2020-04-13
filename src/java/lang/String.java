@@ -1,9 +1,3 @@
-/*
- * Copyright (c) 1994, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- */
-
 package java.lang;
 
 import java.io.ObjectStreamField;
@@ -3123,6 +3117,10 @@ public final class String     implements java.io.Serializable, Comparable<String
 
     /**
      * todo   这个方法是什么  返回在JVM虚拟机中存在的地址？？
+     *   这个方法的引入是 intern这个是个native方法 这个API的作用是手动将一个字符串对象的值转移到字符串常量池中
+     *    这里再说明一下 字符串常量池的本质是个hashtable 所以 这个方法也不能常用 再jdk8之前 常量池放在方法区
+     *     因为没有垃圾回收机制 会导致oom
+     *     好在JDK8之后方法堆内存里面
      * Returns a canonical representation for the string object.
      * <p>
      * A pool of strings, initially empty, is maintained privately by the

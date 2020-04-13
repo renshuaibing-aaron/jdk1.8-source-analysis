@@ -1,27 +1,3 @@
-/*
- * Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
 package java.lang;
 
 import java.io.InputStream;
@@ -72,7 +48,7 @@ import sun.security.util.SecurityConstants;
  * Class#getClassLoader() reference} to the <tt>ClassLoader</tt> that defined
  * it.
  *
- * <p> <tt>Class</tt> objects for array classes are not created by class
+ * <p> <tt>Class</tt> objects for array classes are not created by clasŶ
  * loaders, but are created automatically as required by the Java runtime.
  * The class loader for an array class, as returned by {@link
  * Class#getClassLoader()} is the same as the class loader for its element
@@ -650,8 +626,9 @@ public abstract class ClassLoader {
     private ProtectionDomain preDefineClass(String name,
                                             ProtectionDomain pd)
     {
-        if (!checkName(name))
+        if (!checkName(name)) {
             throw new NoClassDefFoundError("IllegalName: " + name);
+        }
 
         // Note:  Checking logic in java.lang.invoke.MemberName.checkForTypeAlias
         // relies on the fact that spoofing is impossible if a class has a name

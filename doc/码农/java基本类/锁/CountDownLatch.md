@@ -1,0 +1,5 @@
+1.CountDownLatch和CylicBarrier的区别
+CountDownLatch的作用是允许1个或者N个线程等待其他线程完成执行 但是CylicBarrier是允许N个线程相互等待
+CountDownLatch的计数器无法被重置 CylicBarrier的计数器可以被重置后使用  是循环的使用的
+
+CountDownLatch里面使用的sync  内部是使用共享锁实现的  关键的AQS内部的计时器  外部线程可以修改这个计时器

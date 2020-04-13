@@ -24,6 +24,7 @@ public class RedisClient {
         jedis.set("rsb".getBytes(),"rwx".getBytes());
 
 
+
         jedis.set("person".getBytes(),personByte);
         jedis.set("person2".getBytes(),person2Byte);
 

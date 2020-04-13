@@ -1,0 +1,9 @@
+1.严格的说Semapore并不是锁 这个解释为信号量 比较好 
+其内部的数据结构是 内部有个AQS(sync)  和countdownlatch差不多用的都是共享锁
+
+不同的是在获取锁和释放锁的时候触发的动作不一样  semaphore只是简单的增加减少state的值
+
+但是countdownlatch的方法不一样  在使用countdown方法后 会唤醒在同步队列器中的线程(这里也可以看出,countdownlatch并
+不简单的控制一个线程 可以是一个线程组,一旦唤醒是整个线程组，因为这个是共享锁)
+
+注意在semaphore内部的sync有两种实现 公平锁和非公平锁

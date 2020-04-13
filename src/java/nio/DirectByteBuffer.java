@@ -9,15 +9,8 @@ import sun.misc.VM;
 import sun.nio.ch.DirectBuffer;
 
 
-class DirectByteBuffer
-
-    extends MappedByteBuffer
-
-
-
-    implements DirectBuffer
+class DirectByteBuffer  extends MappedByteBuffer   implements DirectBuffer
 {
-
 
 
     // Cached unsafe-access object

@@ -10,11 +10,11 @@ public class ProxyDynamic {
 
         TestInvocationHandler testInvocationHandler = new TestInvocationHandler(new SayImpl());
        Say say = (Say) Proxy.newProxyInstance(SayImpl.class.getClassLoader(), SayImpl.class.getInterfaces(), testInvocationHandler);
-        System.out.println("================="+say);
+        System.out.println("=======dynamic proxy=========="+say);
 
         say.sayHello("my dear");
 
-        say.write();
+       // say.write();
     }
 
     /*

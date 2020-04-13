@@ -339,7 +339,7 @@ public class ConcurrentHashMapJDK7<K, V> extends AbstractMap<K, V>
     }
 
     /**
-     * 一个特殊的HashTable
+     * 一个特殊的HashTable  todo  这里继承AQS 为了构造锁简单  这里其实用的也不是
      * Segments are specialized versions of hash tables.  This
      * subclasses from ReentrantLock opportunistically, just to
      * simplify some locking and avoid separate construction.

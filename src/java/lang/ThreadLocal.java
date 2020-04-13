@@ -220,7 +220,7 @@ public class ThreadLocal<T> {
      * unless its value is {@linkplain #set set} by the current thread
      * in the interim.  This may result in multiple invocations of the
      * {@code initialValue} method in the current thread.
-     *
+     * 为什么每次使用完都要删除这个数据
      * @since 1.5
      */
      public void remove() {
@@ -311,6 +311,7 @@ public class ThreadLocal<T> {
     static class ThreadLocalMap {
 
         /**
+         * 弱引用是什么意思？？
          * The entries in this hash map extend WeakReference, using
          * its main ref field as the key (which is always a
          * ThreadLocal object).  Note that null keys (i.e. entry.get()

@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.nio.channels.spi;
 
 import java.io.IOException;
@@ -187,18 +162,22 @@ public abstract class AbstractSelectableChannel
      * @throws  CancelledKeyException {@inheritDoc}
      *
      * @throws  IllegalArgumentException {@inheritDoc}
+     * ×¢²áSelector  ·µ»ØÒ»¸öSelectionKey
      */
-    public final SelectionKey register(Selector sel, int ops,
-                                       Object att)
+    @Override
+    public final SelectionKey register(Selector sel, int ops, Object att)
         throws ClosedChannelException
     {
         synchronized (regLock) {
-            if (!isOpen())
+            if (!isOpen()) {
                 throw new ClosedChannelException();
-            if ((ops & ~validOps()) != 0)
+            }
+            if ((ops & ~validOps()) != 0) {
                 throw new IllegalArgumentException();
-            if (blocking)
+            }
+            if (blocking) {
                 throw new IllegalBlockingModeException();
+            }
             SelectionKey k = findKey(sel);
             if (k != null) {
                 k.interestOps(ops);
@@ -207,8 +186,10 @@ public abstract class AbstractSelectableChannel
             if (k == null) {
                 // New registration
                 synchronized (keyLock) {
-                    if (!isOpen())
+                    if (!isOpen()) {
                         throw new ClosedChannelException();
+                    }
+                    //sun.nio.ch.SelectorImpl#register
                     k = ((AbstractSelector)sel).register(this, ops, att);
                     addKey(k);
                 }

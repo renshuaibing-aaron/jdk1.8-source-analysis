@@ -1,9 +1,3 @@
-/*
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 import java.util.Collection;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
@@ -196,6 +190,7 @@ public class Semaphore implements java.io.Serializable {
             super(permits);
         }
 
+        @Override
         protected int tryAcquireShared(int acquires) {
             return nonfairTryAcquireShared(acquires);
         }
@@ -211,15 +206,17 @@ public class Semaphore implements java.io.Serializable {
             super(permits);
         }
 
+        @Override
         protected int tryAcquireShared(int acquires) {
             for (;;) {
-                if (hasQueuedPredecessors())
+                if (hasQueuedPredecessors()) {
                     return -1;
+                }
                 int available = getState();
                 int remaining = available - acquires;
-                if (remaining < 0 ||
-                    compareAndSetState(available, remaining))
+                if (remaining < 0 || compareAndSetState(available, remaining)) {
                     return remaining;
+                }
             }
         }
     }

@@ -187,6 +187,7 @@ public abstract class SelectionKey {
     public abstract int interestOps();
 
     /**
+     * 通过interestOps来确定了selector在下一个选择操作的过程中将测试哪些操作类别的准备情况，操作事件是否是channel关注的
      * Sets this key's interest set to the given value.
      *
      * <p> This method may be invoked at any time.  Whether or not it blocks,

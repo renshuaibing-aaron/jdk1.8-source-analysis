@@ -216,6 +216,7 @@ public abstract class Selector implements Closeable {
      *          If an I/O error occurs
      */
     public static Selector open() throws IOException {
+        //根据实际的系统来实现 windows或者是linux系统
         return SelectorProvider.provider().openSelector();
     }
 

@@ -1,10 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import java.util.concurrent.atomic.AtomicLong;
@@ -149,6 +142,13 @@ public class ScheduledThreadPoolExecutor
         return System.nanoTime();
     }
 
+    /**
+     * ScheduledThreadPoolExecutor中的任务队列——DelayedWorkQueue，保存的元素就是ScheduledFutureTask。
+     * DelayedWorkQueue是一种堆结构，time最小的任务会排在堆顶（表示最早过期），每次出队都是取堆顶元素，这样最快到期的任务就会被先执行
+     * 。如果两个ScheduledFutureTask的time相同，就比较它们的序号——sequenceNumber，序号小的代表先被提交，所以就会先执行
+     * @param <V>
+     */
+
     private class ScheduledFutureTask<V>
             extends FutureTask<V> implements RunnableScheduledFuture<V> {
 
@@ -170,6 +170,7 @@ public class ScheduledThreadPoolExecutor
         RunnableScheduledFuture<V> outerTask = this;
 
         /**
+         * 在堆里面的索引
          * Index into delay queue, to support faster cancellation.
          */
         int heapIndex;
@@ -510,14 +511,12 @@ public class ScheduledThreadPoolExecutor
      * @throws RejectedExecutionException {@inheritDoc}
      * @throws NullPointerException       {@inheritDoc}
      */
-    public <V> ScheduledFuture<V> schedule(Callable<V> callable,
-                                           long delay,
-                                           TimeUnit unit) {
-        if (callable == null || unit == null)
+    @Override
+    public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
+        if (callable == null || unit == null) {
             throw new NullPointerException();
-        RunnableScheduledFuture<V> t = decorateTask(callable,
-            new ScheduledFutureTask<V>(callable,
-                                       triggerTime(delay, unit)));
+        }
+        RunnableScheduledFuture<V> t = decorateTask(callable,  new ScheduledFutureTask<V>(callable, triggerTime(delay, unit)));
         delayedExecute(t);
         return t;
     }
@@ -778,8 +777,7 @@ public class ScheduledThreadPoolExecutor
      * class must be declared as a BlockingQueue<Runnable> even though
      * it can only hold RunnableScheduledFutures.
      */
-    static class DelayedWorkQueue extends AbstractQueue<Runnable>
-        implements BlockingQueue<Runnable> {
+    static class DelayedWorkQueue extends AbstractQueue<Runnable>  implements BlockingQueue<Runnable> {
 
         /*
          * A DelayedWorkQueue is based on a heap-based data structure
@@ -1043,25 +1041,29 @@ public class ScheduledThreadPoolExecutor
             }
         }
 
+        @Override
         public RunnableScheduledFuture<?> take() throws InterruptedException {
             final ReentrantLock lock = this.lock;
             lock.lockInterruptibly();
             try {
-                for (;;) {
+                for (;;) {  //自旋等待
                     RunnableScheduledFuture<?> first = queue[0];
-                    if (first == null)
-                        available.await();
+                    if (first == null)  // 队列为空
+                        available.await();   // 等待元素入队
                     else {
                         long delay = first.getDelay(NANOSECONDS);
-                        if (delay <= 0)
+                        if (delay <= 0)  // 元素已到期
                             return finishPoll(first);
-                        first = null; // don't retain ref while waiting
+                        first = null; // don't retain ref while waiting    // 执行到此处, 说明队首元素还未到期
                         if (leader != null)
                             available.await();
                         else {
+                            // 当前线程成功leader线程
                             Thread thisThread = Thread.currentThread();
                             leader = thisThread;
                             try {
+
+                                //这里是利用condition的功能 如果没有到期 则阻塞一段时间
                                 available.awaitNanos(delay);
                             } finally {
                                 if (leader == thisThread)

@@ -11,6 +11,7 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 
 /**
+ * Ë«¶Ë×èÈû¶ÓÁĞ
  * An optionally-bounded {@linkplain BlockingDeque blocking deque} based on
  * linked nodes.
  *

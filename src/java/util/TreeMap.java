@@ -7,7 +7,8 @@ import java.util.function.Consumer;
 
 /**
  * todo TreeMap 是红黑树的具体实现  实现这个接口 NavigableMap  说明它支持一系列的导航，具备针对给定搜索目标返回最接近匹配项的导航方法 。
- *
+ *      在一致性hash算法中有应用
+ *    https://www.jianshu.com/p/e11fe1760a3d
  * A Red-Black tree based {@link NavigableMap} implementation.
  * The map is sorted according to the {@linkplain Comparable natural
  * ordering} of its keys, or by a {@link Comparator} provided at map
@@ -105,6 +106,7 @@ public class TreeMap<K,V>     extends AbstractMap<K,V>    implements NavigableMa
     private transient int size = 0;
 
     /**
+     * 修改次数
      * The number of structural modifications to the tree.
      */
     private transient int modCount = 0;

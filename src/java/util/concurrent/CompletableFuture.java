@@ -1,10 +1,3 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 import java.util.function.Supplier;
 import java.util.function.Consumer;
@@ -51,7 +44,7 @@ import java.util.concurrent.locks.LockSupport;
  * which case, a new Thread is created to run each task).  To simplify
  * monitoring, debugging, and tracking, all generated asynchronous
  * tasks are instances of the marker interface {@link
- * AsynchronousCompletionTask}. </li>
+ * AsynchronousCompletionTask}. </li>supplyAsync
  *
  * <li>All CompletionStage methods are implemented independently of
  * other public methods, so the behavior of one method is not impacted
@@ -634,8 +627,7 @@ public class CompletableFuture<T> implements Future<T>, CompletionStage<T> {
         return true;
     }
 
-    private CompletableFuture<Void> uniAcceptStage(Executor e,
-                                                   Consumer<? super T> f) {
+    private CompletableFuture<Void> uniAcceptStage(Executor e,      Consumer<? super T> f) {
         if (f == null) throw new NullPointerException();
         CompletableFuture<Void> d = new CompletableFuture<Void>();
         if (e != null || !d.uniAccept(this, f, null)) {

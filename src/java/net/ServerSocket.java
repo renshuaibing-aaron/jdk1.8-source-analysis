@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1995, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.net;
 
 import java.io.FileDescriptor;
@@ -228,11 +203,13 @@ class ServerSocket implements java.io.Closeable {
      */
     public ServerSocket(int port, int backlog, InetAddress bindAddr) throws IOException {
         setImpl();
-        if (port < 0 || port > 0xFFFF)
+        if (port < 0 || port > 0xFFFF) {
             throw new IllegalArgumentException(
                        "Port value out of range: " + port);
-        if (backlog < 1)
-          backlog = 50;
+        }
+        if (backlog < 1) {
+            backlog = 50;
+        }
         try {
             bind(new InetSocketAddress(bindAddr, port), backlog);
         } catch(SecurityException e) {

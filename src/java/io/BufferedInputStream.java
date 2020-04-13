@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1994, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.io;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
@@ -47,8 +22,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * @author  Arthur van Hoff
  * @since   JDK1.0
  */
-public
-class BufferedInputStream extends FilterInputStream {
+public   class BufferedInputStream extends FilterInputStream {
 
     private static int DEFAULT_BUFFER_SIZE = 8192;
 

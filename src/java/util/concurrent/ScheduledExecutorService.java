@@ -1,13 +1,7 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 
 /**
+ * todo ScheduledExecutorService在普通执行器接口（ExecutorService）的基础上引入了Future模式，使得可以限时或周期性地调度任务。
  * An {@link ExecutorService} that can schedule commands to run after a given
  * delay, or to execute periodically.
  *
