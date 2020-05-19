@@ -5,6 +5,7 @@ import sun.misc.Unsafe;
 
 
 /**
+ * 直接字节缓冲区，其内容是文件的内存映射区域
  * A direct byte buffer whose content is a memory-mapped region of a file.
  *
  * <p> Mapped byte buffers are created via the {@link

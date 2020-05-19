@@ -1,4 +1,6 @@
-package aaron.ren.pragram.ratelimiter;
+package aaron.ren.pragram.ratelimiter.funnel;
+
+import aaron.ren.pragram.ratelimiter.funnel.Funnel;
 
 import java.util.Date;
 import java.util.Random;

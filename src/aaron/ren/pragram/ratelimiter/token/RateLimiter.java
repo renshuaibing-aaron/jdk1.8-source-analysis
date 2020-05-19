@@ -1,4 +1,4 @@
-package aaron.ren.pragram.ratelimiter;
+package aaron.ren.pragram.ratelimiter.token;
 
 import sun.misc.Unsafe;
 

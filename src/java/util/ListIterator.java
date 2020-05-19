@@ -1,31 +1,8 @@
-/*
- * Copyright (c) 1997, 2011, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.util;
 
 /**
+ *
+ * 比Iterator 这个迭代器的方法更多 根据list实现的一个迭代器
  * An iterator for lists that allows the programmer
  * to traverse the list in either direction, modify
  * the list during iteration, and obtain the iterator's

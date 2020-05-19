@@ -26,8 +26,13 @@ public class MappedByteBufferTest {
     public static void writeToFileByMappedByteBuffer() {
         Path path = Paths.get(MappedByteBufferTest.class.getResource(FILE_NAME).getPath());
         byte[] bytes = CONTENT.getBytes(Charset.forName(CHARSET));
+
         try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.READ,
-                StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)
+
+        )
+
+        {
             MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, bytes.length);
             if (mappedByteBuffer != null) {
                 mappedByteBuffer.put(bytes);

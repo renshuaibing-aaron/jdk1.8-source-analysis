@@ -660,12 +660,11 @@ public class HashMap<K,V> extends AbstractMap<K,V>  implements Map<K,V>, Cloneab
         if ((p = tab[i]) == null) {
             tab[i] = newNode(hash, key, value, null);
         }
-
-
         else {
             //如果hash冲突了(这里分为三种类型)
             Node<K,V> e; K k;
             // 如果给定的hash和冲突下标中的 hash 值相等并且 （已有的key和给定的key相等（地址相同，或者equals相同）），说明该key和已有的key相同
+            //注意这里先比较==  这个是比较快的  然后用的是equals
             if (p.hash == hash && ((k = p.key) == key || (key != null && key.equals(k)))) {
                 // 那么就将已存在的值赋给上面定义的e变量
                 e = p;
@@ -703,7 +702,6 @@ public class HashMap<K,V> extends AbstractMap<K,V>  implements Map<K,V>, Cloneab
                     p = e;
                 }
             }
-
             // 通过上面的逻辑，如果e不是null，表示：该元素存在了(说明key重复，则更新key对应的value的值)
             if (e != null) { // existing mapping for key
                 // 取出该元素的值
@@ -796,6 +794,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>  implements Map<K,V>, Cloneab
                     } else if (e instanceof TreeNode) {
                         ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
                     } else {
+                        //todo  注意这个地方就是JDK1.7 出现线程不安全的地方 jdk1.7采用头插法 会形成环状
                         //如果是多个节点的链表，将原链表拆分为两个链表
                         //JDK 1.8扩容时，数据存储位置重新计算的方式
                         // preserve order
@@ -804,6 +803,10 @@ public class HashMap<K,V> extends AbstractMap<K,V>  implements Map<K,V>, Cloneab
                         Node<K,V> next;
                         do {
                             next = e.next;
+                            // todo
+                            //   这里的优化 是把链表进行分开成两个表 有人说 resize操作没有使用重新hash
+                             //  可以看出是错误的 还会进行hash  但是hash的方法不一样  是用节点的hash值
+                            //   对oldcap进行取模（这里姑且认为是一次重新hash的方法）  根据结果进行分配
                             if ((e.hash & oldCap) == 0) {
                                 if (loTail == null) {
                                     loHead = e;
@@ -822,7 +825,10 @@ public class HashMap<K,V> extends AbstractMap<K,V>  implements Map<K,V>, Cloneab
                             }
                         } while ((e = next) != null);
 
-                        //链表1存于原索引
+                        // todo
+                        //  下面这两个方法 会进行直挂载的操作  注意 这里 其他链表会不会出现这个桶的位置
+                        //  不会 这就是n的值是2次幂的原因
+                        //  链表1存于原索引
                         if (loTail != null) {
                             loTail.next = null;
                             newTab[j] = loHead;
@@ -851,7 +857,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>  implements Map<K,V>, Cloneab
         int n, index; Node<K,V> e;
         // 如果数组是null 或者数组的长度小于 64
         if (tab == null || (n = tab.length) < MIN_TREEIFY_CAPACITY) {
-            //重新散列
+            //重新散列  就是扩容
             resize();
         }
 
@@ -1876,6 +1882,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>  implements Map<K,V>, Cloneab
         size = 0;
     }
 
+    //todo  看这里LinkedHashMap  会用到
     // Callbacks to allow LinkedHashMap post-actions
     void afterNodeAccess(Node<K,V> p) { }
     void afterNodeInsertion(boolean evict) { }

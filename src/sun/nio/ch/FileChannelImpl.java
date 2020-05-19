@@ -556,6 +556,7 @@ public class FileChannelImpl
         }
     }
 
+    @Override
     public long transferTo(long position, long count,
                            WritableByteChannel target)
         throws IOException

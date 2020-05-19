@@ -4,7 +4,7 @@ import java.util.concurrent.RecursiveTask;
 
 public class CountRecursiveTask extends RecursiveTask<Integer> {
     //达到子任务直接计算的阈值
-    private int Th = 15;
+    private int Th = 2;
 
     private int start;
     private int end;
@@ -27,6 +27,8 @@ public class CountRecursiveTask extends RecursiveTask<Integer> {
             CountRecursiveTask left = new CountRecursiveTask(start, middle);
             System.out.println("start:" + start + ";middle:" + middle + ";end:" + end);
             left.fork();
+
+
             CountRecursiveTask right = new CountRecursiveTask(middle + 1, end);
             right.fork();
             //最后一定要记得fork()结果(如果需要结果的话)
@@ -34,7 +36,8 @@ public class CountRecursiveTask extends RecursiveTask<Integer> {
         }
     }
 
-    private int count() {
+    private int count()  {
+        System.out.println("========Thread=========="+Thread.currentThread());
         int sum = 0;
         for (int i = start; i <= end; i++) {
             sum  +=i;

@@ -3,3 +3,8 @@ CountDownLatchµÄ×÷ÓÃÊÇÔÊÐí1¸ö»òÕßN¸öÏß³ÌµÈ´ýÆäËûÏß³ÌÍê³ÉÖ´ÐÐ µ«ÊÇCylicBarrierÊÇÔ
 CountDownLatchµÄ¼ÆÊýÆ÷ÎÞ·¨±»ÖØÖÃ CylicBarrierµÄ¼ÆÊýÆ÷¿ÉÒÔ±»ÖØÖÃºóÊ¹ÓÃ  ÊÇÑ­»·µÄÊ¹ÓÃµÄ
 
 CountDownLatchÀïÃæÊ¹ÓÃµÄsync  ÄÚ²¿ÊÇÊ¹ÓÃ¹²ÏíËøÊµÏÖµÄ  ¹Ø¼üµÄAQSÄÚ²¿µÄ¼ÆÊ±Æ÷  Íâ²¿Ïß³Ì¿ÉÒÔÐÞ¸ÄÕâ¸ö¼ÆÊ±Æ÷
+
+
+2.ÐèÒª×¢ÒâµÄÊÇ CountDownLatchÓÐÊ±ºò¿ÉÒÔÊµÏÖCylicBarrierµÄ¹¦ÄÜ µ«ÊÇÓ¦¸ÃÃ÷°×µÄÊÇ ¶þÕßµÄÇø±ð
+ÆäÖÐÒ»¸ö³¡¾°ÊÇÔõÃ´±£Ö¤Ò»×éÏß³ÌÍ¬Ê±Æô¶¯ ÕâÁ½¸öÍ¬²½Æ÷¶¼¿ÉÒÔÊµÏÖ µ«ÊÇÓÃ·¨È´²»Ò»Ñù  CountDownLatch±ØÐëÍ¨¹ý
+Á½ÍâµÄÒ»¸öÏß³ÌÀ´¿ØÖÆ µ«ÊÇCylicBarrier¾Í¿ÉÒÔÏà»¥¿ØÖÆ  //Í¬Ê±Ñ­»·ÀûÓÃµÄ»° CountDownLatch¸üÊÇÎÞÄÜÎªÁ¦ÁË

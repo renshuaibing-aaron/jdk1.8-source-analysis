@@ -79,6 +79,7 @@ import sun.misc.SharedSecrets;
  * @since   1.2
  */
 
+//这里为什么 ArrayList既然已经继承了AbstractList为什么还要实现List ？因为AbstractList 没有完全实现list的方法
 public class ArrayList<E> extends AbstractList<E>
         implements List<E>, RandomAccess, Cloneable, java.io.Serializable
 {
@@ -559,7 +560,7 @@ public class ArrayList<E> extends AbstractList<E>
         Object[] a = c.toArray();
         int numNew = a.length;
         ensureCapacityInternal(size + numNew);  // Increments modCount
-        System.arraycopy(a, 0, elementData, size, numNew);
+        System.arraycopy(a, 0, elementData, size, numNew);   //利用数组拷贝实现
         size += numNew;
         return numNew != 0;
     }

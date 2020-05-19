@@ -661,10 +661,11 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      */
     public final ForkJoinTask<V> fork() {
         Thread t;
-        if ((t = Thread.currentThread()) instanceof ForkJoinWorkerThread)
+        if ((t = Thread.currentThread()) instanceof ForkJoinWorkerThread) {
             ((ForkJoinWorkerThread)t).workQueue.push(this);
-        else
+        } else {
             ForkJoinPool.common.externalPush(this);
+        }
         return this;
     }
 

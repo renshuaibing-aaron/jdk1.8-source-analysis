@@ -333,23 +333,37 @@ public class ReentrantReadWriteLock   implements ReadWriteLock, java.io.Serializ
         abstract boolean writerShouldBlock();
 
         /*
+        释放写锁
          * Note that tryRelease and tryAcquire can be called by
          * Conditions. So it is possible that their arguments contain
          * both read and write holds that are all released during a
          * condition wait and re-established in tryAcquire.
          */
 
+        @Override
         protected final boolean tryRelease(int releases) {
-            if (!isHeldExclusively())
+            // 是否持有当前锁
+            if (!isHeldExclusively()) {
                 throw new IllegalMonitorStateException();
+            }
+            // 计算 state 值
             int nextc = getState() - releases;
+            // 计算写锁的状态，如果是0，说明是否成功。  //这里需要注意 这个计算的只是state变量低16位的值 不是整个的值
             boolean free = exclusiveCount(nextc) == 0;
-            if (free)
+            // 释放成功，设置持有锁的线程为 null。
+            if (free) {
                 setExclusiveOwnerThread(null);
+            }
+            // 设置 state
             setState(nextc);
             return free;
         }
 
+        // 如果有读锁，此时是获取不到写锁的。当有写锁时，判断重入次数。
+       //     todo  注意这个地方有个点是 当一个线程同时拥有写锁和读锁  此时是可以重入的
+        // 当写锁空闲，读锁空闲，公平模式下，如果队列中有等待的，不会抢锁。非公平模式下，必抢锁。
+        //其实这个地方是独占锁的实现(获取写锁？)
+        @Override
         protected final boolean tryAcquire(int acquires) {
             /*
              * Walkthrough:
@@ -362,26 +376,43 @@ public class ReentrantReadWriteLock   implements ReadWriteLock, java.io.Serializ
              *    queue policy allows it. If so, update state
              *    and set owner.
              */
+            // 写
             Thread current = Thread.currentThread();
+
             int c = getState();
+            // 用 state & 65535 得到低 16 位的值。
             int w = exclusiveCount(c);
             if (c != 0) {
                 // (Note: if c != 0 and w == 0 then shared count != 0)
-                if (w == 0 || current != getExclusiveOwnerThread())
+                // 如果 state 不是0，且低16位是0，说明了什么？说明写锁是空闲的，读锁被霸占了。那么也不能拿锁，返回 fasle。
+                // 如果低 16 位不是0，说明写锁被霸占了，并且，如果持有锁的不是当前线程，那么这次拿锁是失败的。返回 fasle。
+                // 总之，当有读锁，就不能获取写锁。当有写锁，就必须是重入锁。
+                if (w == 0 || current != getExclusiveOwnerThread()) {
                     return false;
-                if (w + exclusiveCount(acquires) > MAX_COUNT)
+                }
+                // 到这一步了，只会是写重入锁。如果写重入次数超过最大值 65535，就会溢出。
+                if (w + exclusiveCount(acquires) > MAX_COUNT) {
                     throw new Error("Maximum lock count exceeded");
+                }
                 // Reentrant acquire
+                // 将 state  + 1
                 setState(c + acquires);
                 return true;
             }
+            // 当 state 是 0 的时候，那么就可以获取锁了。
+            // writerShouldBlock 判断是否需要锁。非公平情况下，返回 false。公平情况下，根据 hasQueuedPredecessors 结果判断。
+            // 当队列中有锁等待了，就返回 false 了。
+            // 当是非公平锁的时候，或者队列中没有等待节点的时候，尝试用 CAS 修改 state。
             if (writerShouldBlock() ||
-                !compareAndSetState(c, c + acquires))
+                !compareAndSetState(c, c + acquires)) {
                 return false;
+            }
+            // 修改成功 state 后，修改锁的持有线程。
             setExclusiveOwnerThread(current);
             return true;
         }
 
+        @Override
         protected final boolean tryReleaseShared(int unused) {
             Thread current = Thread.currentThread();
             if (firstReader == current) {
@@ -418,6 +449,12 @@ public class ReentrantReadWriteLock   implements ReadWriteLock, java.io.Serializ
                 "attempt to unlock read lock, not locked by current thread");
         }
 
+        /**
+         * 获取读锁
+         * @param unused
+         * @return
+         */
+        @Override
         protected final int tryAcquireShared(int unused) {
             /*
              * Walkthrough:
@@ -436,28 +473,41 @@ public class ReentrantReadWriteLock   implements ReadWriteLock, java.io.Serializ
              */
             Thread current = Thread.currentThread();
             int c = getState();
-            if (exclusiveCount(c) != 0 &&
-                getExclusiveOwnerThread() != current)
-                return -1;
+            // exclusiveCount(c) != 0 ---》 用 state & 65535 得到低 16 位的值。如果不是0，说明写锁被持有了。
+            // getExclusiveOwnerThread() != current----> 不是当前线程
+            // 如果写锁被霸占了，且持有线程不是当前线程，返回 false，加入队列。获取读锁失败。
+            // 反之，如果持有写锁的是当前线程，就可以继续获取读锁了。
+            if (exclusiveCount(c) != 0 && getExclusiveOwnerThread() != current) {
+                return -1;  // 获取锁失败
+            }
+            // 如果写锁没有被霸占，则将高16位移到低16位
             int r = sharedCount(c);
-            if (!readerShouldBlock() &&
-                r < MAX_COUNT &&
-                compareAndSetState(c, c + SHARED_UNIT)) {
+            // !readerShouldBlock() 和写锁的逻辑一样（根据公平与否策略和队列是否含有等待节点）
+            // 不能大于 65535，且 CAS 修改成功
+            if (!readerShouldBlock() && r < MAX_COUNT && compareAndSetState(c, c + SHARED_UNIT)) {
+                // 如果读锁是空闲的， 获取锁成功。
                 if (r == 0) {
+                    // 将当前线程设置为第一个读锁线程
                     firstReader = current;
+                    // 计数器为1
                     firstReaderHoldCount = 1;
-                } else if (firstReader == current) {
-                    firstReaderHoldCount++;
-                } else {
-                    HoldCounter rh = cachedHoldCounter;
+                } else if (firstReader == current) { // 如果读锁不是空闲的，且第一个读线程是当前线程。获取锁成功。
+                    firstReaderHoldCount++;   // 将计数器加一
+                } else { // 如果不是第一个线程，获取锁成功。
+                    HoldCounter rh = cachedHoldCounter; // cachedHoldCounter 代表的是最后一个获取读锁的线程的计数器。
+                    // 如果最后一个线程计数器是 null 或者不是当前线程，那么就新建一个 HoldCounter 对象
                     if (rh == null || rh.tid != getThreadId(current))
+                        // 给当前线程新建一个 HoldCounter
                         cachedHoldCounter = rh = readHolds.get();
+                        // 如果不是 null，且 count 是 0，就将上个线程的 HoldCounter 覆盖本地的。
                     else if (rh.count == 0)
                         readHolds.set(rh);
+                    // 对 count 加一
                     rh.count++;
                 }
                 return 1;
             }
+            // 死循环获取读锁。包含锁降级策略。
             return fullTryAcquireShared(current);
         }
 

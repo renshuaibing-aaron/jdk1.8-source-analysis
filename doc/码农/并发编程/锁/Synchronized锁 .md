@@ -24,9 +24,13 @@
 
 
 1.java 中的锁分为内部锁和显示锁
-说说内部锁是怎么优化的？
+  https://www.jianshu.com/p/c5058b6fe8e5
+  https://www.jianshu.com/p/4758852cbff4
+  https://www.jianshu.com/p/6f0bba673d5c
+  https://www.cnblogs.com/linghu-java/p/8944784.html
+说说内部锁是怎么优化的？ (分析synchronized锁的粗化过程 需要看JVM虚拟机的源码来解释过程)
+  其实synchronized锁共有四种状态从低到高是无锁状态->  偏向状态-> 轻量级状态 -> 重量级状态  (锁粗化/膨胀的过程) 并且这中间不能降级
 
-Synchronized
 锁的消除 
 锁粗化
 偏向锁

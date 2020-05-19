@@ -1,0 +1,13 @@
+Spring Cloud Ribbon 和 Netflix Ribbon
+Spring Cloud Ribbon是在Netflix Ribbon的基础上做了进一步的封装，使它更加适合与微服。
+在用法上Spring Cloud Ribbon的路由的服务清单是根据"注册中心"微服列表来的会实时更新，Netflix Ribbon需要手动设置。
+Spring Cloud Ribbon的均衡器使用的是Netflix Ribbon的ZoneAwareLoadBalancer
+
+
+
+2.
+RestTemplate 是Spring自己封装的http请求的客户端，也就是说它只能发送一个正常的Http请求,这跟我们要求的负载均衡是有出入的，还有就是这个请求的链接上的域名是我们微服的一个服务名，
+而不是一个真正的域名，那它是怎么实现负载均衡功能的呢？ 我们来看看RestTemplate的父类InterceptingHttpAccessor
+
+从源码我们可以知道InterceptingHttpAccessor中有一个拦截器列表List<ClientHttpRequestInterceptor>，如果这个列表为空，则走正常请求流程，如果不为空则走拦截器，
+所以只要给RestTemplate添加拦截器，而这个拦截器中的逻辑就是Ribbon的负载均衡的逻辑。通过下面的方式可以为RestTemplate配置添加拦截器

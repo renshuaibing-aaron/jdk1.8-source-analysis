@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1999, 2008, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.util;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;

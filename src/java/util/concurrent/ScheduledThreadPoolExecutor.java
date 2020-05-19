@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.*;
 
 /**
+ * 定时执行的线程
  * A {@link ThreadPoolExecutor} that can additionally schedule
  * commands to run after a given delay, or to execute
  * periodically. This class is preferable to {@link java.util.Timer}

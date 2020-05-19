@@ -1,4 +1,4 @@
-package aaron.ren.pragram.ratelimiter;
+package aaron.ren.pragram.ratelimiter.slidingwindow;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

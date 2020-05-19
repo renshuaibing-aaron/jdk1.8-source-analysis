@@ -29,3 +29,7 @@ https://www.cnblogs.com/cchust/p/4255499.html
  
  通过在写的时候加锁，可以解决脏读。通过在读的时候加锁，可以解决不可重复读。
  通过串行化，可以解决幻读。
+
+
+
+4.https://blog.csdn.net/nanxiaotao/article/details/80412196

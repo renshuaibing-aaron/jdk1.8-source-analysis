@@ -5,6 +5,8 @@
   
 2.ReentrantReadWriteLock的核心原理  是AQS  用sate的高16位用来表示读锁的线程数  低16位表示写锁线程的进入次数
 
+看源码可以知道 读写锁里面有个 final Sync sync; 变量在new ReentrantReadWriteLock 时候进行初始化 然后
+读写锁里面有两个锁(读写锁读写锁用的是sync这个变量需要 对其进行操作)
 
 3.读写锁的锁降级
  ```java

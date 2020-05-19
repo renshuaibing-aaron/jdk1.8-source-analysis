@@ -69,12 +69,14 @@ public class FutureTask<V> implements RunnableFuture<V> {
     private Object outcome; // non-volatile, protected by state reads/writes
     /** The thread running the callable; CASed during run() */
     private volatile Thread runner;
+
+    //todo  注意这里说的是堆栈  为什么叫栈 这里的数据结构是栈？
     /** Treiber stack of waiting threads */
     private volatile WaitNode waiters;
 
     /**
      * Returns result or throws exception for completed task.
-     *
+     *拿到结果，判断状态，如果状态正常，就返回值，如果不正常，就抛出异常
      * @param s completed state value
      */
     @SuppressWarnings("unchecked")
@@ -150,15 +152,18 @@ public class FutureTask<V> implements RunnableFuture<V> {
     }
 
     /**
+     * todo 这里需要注意的是 获取get方法 可以是多线程进行获取的 肯定是并发的
      * @throws CancellationException {@inheritDoc}
      */
     @Override
     public V get() throws InterruptedException, ExecutionException {
         int s = state;
+        //判断状态
         if (s <= COMPLETING) {
-            //主要的阻塞方法
+            //主要的阻塞方法 其实这里是挂起等待
             s = awaitDone(false, 0L);
         }
+        //返回结果
         return report(s);
     }
 
@@ -206,6 +211,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
             //接着设置outcom为计算结果
             outcome = v;
             UNSAFE.putOrderedInt(this, stateOffset, NORMAL); // final state
+            //唤醒等待线程  再get方法里面禁锢的线程
             finishCompletion();
         }
     }
@@ -228,6 +234,13 @@ public class FutureTask<V> implements RunnableFuture<V> {
         }
     }
 
+    /**
+     * 核心方法
+     * 判断状态。
+     * 执行 callable 的 call 方法。
+     * 设置结果并唤醒等待的所有线程。
+     *
+     */
     @Override
     public void run() {
         //设置runner为线程池中的当前线程
@@ -348,6 +361,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
         // assert state > COMPLETING;
         for (WaitNode q; (q = waiters) != null;) {
             if (UNSAFE.compareAndSwapObject(this, waitersOffset, q, null)) {
+                 //该方法先将 waiters 修改成 null，然后遍历栈中所有节点，也就是所有等待的线程，依次唤醒他们
                 for (;;) {
                     Thread t = q.thread;
                     if (t != null) {
@@ -365,6 +379,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
             }
         }
 
+        //这个是个扩展大的方法 在其他的框架里面有扩展
         done();
 
         callable = null;        // to reduce footprint
@@ -379,33 +394,35 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * 主要是阻塞线程，把当前线程放到阻塞线程链表中，通过LockSupport.park(this)阻塞当前线程，
      * 等待线程池里面的线程唤醒。唤醒之后，回到get()方法
      */
-    private int awaitDone(boolean timed, long nanos)
-        throws InterruptedException {
+    private int awaitDone(boolean timed, long nanos)   throws InterruptedException {
         final long deadline = timed ? System.nanoTime() + nanos : 0L;
         WaitNode q = null;
         boolean queued = false;
         for (;;) {
             if (Thread.interrupted()) {
+               // 如果线程中断了，删除节点，并抛出异常
                 removeWaiter(q);
                 throw new InterruptedException();
             }
 
             int s = state;
+            //如果s大于 COMPLETING ，说明任务完成了，返回结果
             if (s > COMPLETING) {
                 if (q != null) {
                     q.thread = null;
                 }
                 return s;
             }
+            //如果等于 COMPLETING，说明任务快要完成了，自旋一会。
             else if (s == COMPLETING) // cannot time out yet
             {
                 Thread.yield();
-            } else if (q == null)
+            } else if (q == null) {//如果 q 是 null，说明这是第一次进入，创建一个新的节点。保存当前线程引用
                 q = new WaitNode();
-            else if (!queued)
-                queued = UNSAFE.compareAndSwapObject(this, waitersOffset,
-                                                     q.next = waiters, q);
-            else if (timed) {
+            } else if (!queued) {
+                //如果还没有修改过 waiters 变量，就使用 CAS 修改当前 waiters 为当前节点，这里是一个栈的结构
+                queued = UNSAFE.compareAndSwapObject(this, waitersOffset, q.next = waiters, q);
+            } else if (timed) { //根据时间策略挂起当前线程
                 nanos = deadline - System.nanoTime();
                 if (nanos <= 0L) {
                     removeWaiter(q);

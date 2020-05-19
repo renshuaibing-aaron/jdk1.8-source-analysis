@@ -771,6 +771,8 @@ public class ForkJoinPool extends AbstractExecutorService {
         volatile int qlock;        // 1: locked, < 0: terminate; else 0
         volatile int base;         // index of next slot for poll
         int top;                   // index of next slot for push
+
+        //队列中任务
         ForkJoinTask<?>[] array;   // the elements (initially unallocated)
         final ForkJoinPool pool;   // the containing pool (may be null)
         final ForkJoinWorkerThread owner; // owning thread or null if shared
@@ -1356,6 +1358,8 @@ public class ForkJoinPool extends AbstractExecutorService {
     volatile int runState;               // lockable status
     final int config;                    // parallelism, mode
     int indexSeed;                       // to generate worker index
+
+    //主要的队列数组
     volatile WorkQueue[] workQueues;     // main registry
     final ForkJoinWorkerThreadFactory factory;
     final UncaughtExceptionHandler ueh;  // per-worker UEH
@@ -2286,7 +2290,9 @@ public class ForkJoinPool extends AbstractExecutorService {
             r = ThreadLocalRandom.getProbe();
         }
         for (;;) {
-            WorkQueue[] ws; WorkQueue q; int rs, m, k;
+            WorkQueue[] ws;
+            WorkQueue q;
+            int rs, m, k;
             boolean move = false;
             if ((rs = runState) < 0) {
                 tryTerminate(false, false);     // help terminate
@@ -2342,14 +2348,17 @@ public class ForkJoinPool extends AbstractExecutorService {
                 q.scanState = INACTIVE;
                 rs = lockRunState();           // publish index
                 if (rs > 0 &&  (ws = workQueues) != null &&
-                    k < ws.length && ws[k] == null)
+                    k < ws.length && ws[k] == null) {
                     ws[k] = q;                 // else terminated
+                }
                 unlockRunState(rs, rs & ~RSLOCK);
             }
-            else
+            else {
                 move = true;                   // move if busy
-            if (move)
+            }
+            if (move) {
                 r = ThreadLocalRandom.advanceProbe(r);
+            }
         }
     }
 
@@ -2362,9 +2371,12 @@ public class ForkJoinPool extends AbstractExecutorService {
      * @param task the task. Caller must ensure non-null.
      */
     final void externalPush(ForkJoinTask<?> task) {
-        WorkQueue[] ws; WorkQueue q; int m;
+        WorkQueue[] ws;
+        WorkQueue q;
+        int m;
         int r = ThreadLocalRandom.getProbe();
         int rs = runState;
+
         if ((ws = workQueues) != null && (m = (ws.length - 1)) >= 0 &&
             (q = ws[m & r & SQMASK]) != null && r != 0 && rs > 0 &&
             U.compareAndSwapInt(q, QLOCK, 0, 1)) {
@@ -2575,8 +2587,9 @@ public class ForkJoinPool extends AbstractExecutorService {
      *         scheduled for execution
      */
     public <T> T invoke(ForkJoinTask<T> task) {
-        if (task == null)
+        if (task == null) {
             throw new NullPointerException();
+        }
         externalPush(task);
         return task.join();
     }
@@ -3358,8 +3371,10 @@ public class ForkJoinPool extends AbstractExecutorService {
             new DefaultForkJoinWorkerThreadFactory();
         modifyThreadPermission = new RuntimePermission("modifyThread");
 
+        //commonPool的初始化
         common = java.security.AccessController.doPrivileged
             (new java.security.PrivilegedAction<ForkJoinPool>() {
+                @Override
                 public ForkJoinPool run() { return makeCommonPool(); }});
         int par = common.config & SMASK; // report 1 even if threads disabled
         commonParallelism = par > 0 ? par : 1;
@@ -3380,14 +3395,17 @@ public class ForkJoinPool extends AbstractExecutorService {
                 ("java.util.concurrent.ForkJoinPool.common.threadFactory");
             String hp = System.getProperty
                 ("java.util.concurrent.ForkJoinPool.common.exceptionHandler");
-            if (pp != null)
+            if (pp != null) {
                 parallelism = Integer.parseInt(pp);
-            if (fp != null)
+            }
+            if (fp != null) {
                 factory = ((ForkJoinWorkerThreadFactory)ClassLoader.
                            getSystemClassLoader().loadClass(fp).newInstance());
-            if (hp != null)
+            }
+            if (hp != null) {
                 handler = ((UncaughtExceptionHandler)ClassLoader.
                            getSystemClassLoader().loadClass(hp).newInstance());
+            }
         } catch (Exception ignore) {
         }
         if (factory == null) {

@@ -1,7 +1,7 @@
-package aaron.ren.pragram.ratelimiter;
+package aaron.ren.pragram.ratelimiter.funnel;
 
 /**
- * 流量控制漏桶算法
+ *漏斗算法
  *
  * @author hling
  */

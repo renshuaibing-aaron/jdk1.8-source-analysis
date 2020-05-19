@@ -431,7 +431,9 @@ public class Semaphore implements java.io.Serializable {
      * @throws IllegalArgumentException if {@code permits} is negative
      */
     public void acquire(int permits) throws InterruptedException {
-        if (permits < 0) throw new IllegalArgumentException();
+        if (permits < 0) {
+            throw new IllegalArgumentException();
+        }
         sync.acquireSharedInterruptibly(permits);
     }
 

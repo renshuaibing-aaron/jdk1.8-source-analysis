@@ -32,5 +32,6 @@ public class ObjectTest {
         System.out.println("当前运行类为:" + son.getClass());
         System.out.println("通过class属性获取类的类对象：" + Parent.class);
         System.out.println("当前运行类的继承的父类为：" + son.getClass().getSuperclass());
+        System.out.println("当前运行类的hashcode为："+son.hashCode());
     }
 }

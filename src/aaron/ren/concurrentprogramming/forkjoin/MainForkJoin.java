@@ -6,7 +6,9 @@ public class MainForkJoin {
 
 
     public static void main(String[] args) {
-        ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        int i = Runtime.getRuntime().availableProcessors();
+
+        ForkJoinPool forkJoinPool = new ForkJoinPool(i);
 
         Integer sum = forkJoinPool.invoke(new CountRecursiveTask(1, 100));
         System.out.println("=================" + sum);

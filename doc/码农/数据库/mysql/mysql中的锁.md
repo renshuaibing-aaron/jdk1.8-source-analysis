@@ -38,6 +38,8 @@ https://mp.weixin.qq.com/s?__biz=MzU2Njg3OTU1Mg==&mid=2247483909&idx=1&sn=57ab44
   select ... for update  加排他锁
 
 
+重点资料
+https://www.cnblogs.com/itdragon/p/8194622.html
 
 
 

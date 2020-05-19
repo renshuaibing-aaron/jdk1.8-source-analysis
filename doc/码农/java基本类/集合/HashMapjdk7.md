@@ -38,8 +38,16 @@ HashMap可以为空 hashTable不能 这里面涉及到equal()方法
 
 
 6.都说HashMap 线程不安全 哪里不安全？
+https://www.cnblogs.com/developer_chan/p/10450908.html
+https://blog.csdn.net/swpu_ocean/article/details/88917958
 HashMap 的线程不安全表现在HashMap在并发环境下多线程put后可能导致get死循环，具体表现为CPU使用率100%，看一下transfer的过程，就是在扩容的过程中产生闭环 导致问题
 另外一个明显的不安全是在put的过程中可能导致数据的丢失 因为没有加锁
+具体来说：
+在jdk1.7中 HashMap的插入采用的是头插法  在扩容的时候采用头插法会导致死循环(当然是在多线程并发的情况下)  会导致CPU高
+在put 操作的时候 两个线程同时put 假如hash 值是同一个 这时候进行put 会出现第二个的值直接把第一个的值给覆盖了(本来应该是出现hash碰撞 两个节点的)
+特别说明的是 在jdk1.8中已经把链表中插入节点改为尾插法 这意味着在JDK1.8中不会出现死循环 但是第二个问题 依旧会出现(这里需要加锁来实现)
+在浏览其他的一些博客的时候 有人说是hashmap的值线程不安全是put之后 无法被其他线程感知到 或者是在put的时候不能被另外一个线程get到 其实这个不是线程不安全的保证
+线程不安全 这里是强一致性或者是弱一致性的问题 看concurrenthashMap 其实concurrenthashMap 也是弱一致性  只有hashtable是强一致性的
 
 
 7.hashmap在jdk1.8之前采用的是头插法  之后用的是尾插法 原因是什么？？？？

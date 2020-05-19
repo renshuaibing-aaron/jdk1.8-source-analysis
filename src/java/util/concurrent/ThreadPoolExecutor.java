@@ -390,7 +390,6 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     private static int runStateOf(int c)     { return c & ~CAPACITY; }
 
     //提供从ctl中解析出线程池中线程的数量
-
     /**
      * 传入的c代表的是ctl的值，即高3位为线程池运行状态runState，低29位为线程池中当前活动的线程数量workerCount，
      * 将其与CAPACITY进行与操作&，也就是与000 11111 11111111 11111111 11111111进行与操作，c的前三位通过与000进行与操作，
@@ -400,7 +399,6 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     private static int workerCountOf(int c)  { return c & CAPACITY; }
 
     //原子变量ctl的初始化方法ctlOf()
-
     /**
      * 传入的rs表示线程池运行状态runState，其是高3位有值，低29位全部为0的int，
      * 而wc则代表线程池中有效线程的数量workerCount，其为高3位全部为0，而低29位有值得int，将runState和workerCount做或操作|处理，
@@ -604,8 +602,11 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     private final AccessControlContext acc;
 
     /**
+     * 这里是线程池内的工作线程
      * 这个本质是线程的封装类 并且这个类实现了AQS 这里是什么意思  通过实现AQS
      * 可以简单的进行加锁和释放锁
+     * 为什么需要加锁 ？在线程执行任务的过程中需要加锁 外部线程在释放线程的时候需要进行中断线程
+     * 在中断之前需要获取锁 获取失败 表示线程正在执行任务
      * Class Worker mainly maintains interrupt control state for
      * threads running tasks, along with other minor bookkeeping.
      * This class opportunistically extends AbstractQueuedSynchronizer
@@ -1074,6 +1075,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     }
 
     /**
+     * 线程的回收  线程的回收 是依赖JVM实现的 在线程池内部 保持了一个线程的引用表
+     * 一旦需要销毁一个线程 删除这个线程的引用  这个是work自己处理的
      * Performs cleanup and bookkeeping for a dying worker. Called
      * only from worker threads. Unless completedAbruptly is set,
      * assumes that workerCount has already been adjusted to account
