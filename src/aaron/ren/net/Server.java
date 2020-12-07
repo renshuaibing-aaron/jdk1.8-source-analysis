@@ -13,7 +13,7 @@ public class Server {
 
             BufferedInputStream bis = new BufferedInputStream(coon.getInputStream());
 
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("D:\\tmp\\1.jpg"));
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("D:\\tmp\\1.bmp"));
             byte bytes[] = new byte[1024];
             int len;
             while ((len = bis.read(bytes)) != -1) {

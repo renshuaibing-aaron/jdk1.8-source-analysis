@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
- *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
- *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
- */
-
 package sun.nio.ch;
 
 import java.io.IOException;
@@ -35,17 +10,19 @@ import sun.misc.*;
  * An implementation of Selector for Linux 2.6+ kernels that uses
  * the epoll event notification facility.
  */
-class EPollSelectorImpl
-    extends SelectorImpl
+class EPollSelectorImpl    extends SelectorImpl
 {
 
     // File descriptors used for interrupt
+    // 用于中断的文件描述符
     protected int fd0;
     protected int fd1;
 
+    // EpollArrayWapper将Linux的epoll相关系统调用封装成了native方法供EpollSelectorImpl使用
     // The poll object
     EPollArrayWrapper pollWrapper;
 
+    // 保存socket句柄和selectkey,有注册到selector的channel对应的SelectionKey和与之对应的文件描述符都会放入到该映射表中。
     // Maps from file descriptors to keys
     private Map<Integer,SelectionKeyImpl> fdToKey;
 
@@ -61,13 +38,24 @@ class EPollSelectorImpl
      * the abstract superclass Selector.
      */
     EPollSelectorImpl(SelectorProvider sp) throws IOException {
+
+        /**
+         * 首先调用父类SelectorImp的构造方法。JDK中对于注册到Selector上的IO事件关系是使用SelectionKey来表示，
+         * 代表了Channel感兴趣的事件，如Read,Write,Connect,Accept。内部初始化publicKeys和publicSelectedKeys，
+         * 用到的容器是HashSet，前者用来保存所有的感兴趣的事件，后者准备好的事件
+         */
         super(sp);
+        //makePipe返回管道的2个文件描述符，编码在一个long类型的变量中。高32位代表读 低32位代表写。
+        // 当要中断select方法时，往fd1中写入数字1会导致fd0有可读内容，select方法会返回，使用pipe为了实现Selector的wakeup逻辑
         long pipeFds = IOUtil.makePipe(false);
         fd0 = (int) (pipeFds >>> 32);
         fd1 = (int) pipeFds;
         try {
             pollWrapper = new EPollArrayWrapper();
+
             pollWrapper.initInterrupt(fd0, fd1);
+            //定义了一个map类型的变量fdToKey,将channel的文件描述符ID和SelectionKey建立映射关系,
+            // SelectionKey中保存了Channel Selector 感兴趣的事件
             fdToKey = new HashMap<>();
         } catch (Throwable t) {
             try {
@@ -84,17 +72,30 @@ class EPollSelectorImpl
         }
     }
 
+    /**
+     * 该方法会一直阻塞直到至少一个channel被选择(即，该channel注册的事件发生了为止，除非当前线程发生中断或者selector的wakeup方法被调用
+     * 著名的select方法
+     * @param timeout
+     * @return
+     * @throws IOException
+     */
+    @Override
     protected int doSelect(long timeout) throws IOException {
-        if (closed)
+        if (closed) {
             throw new ClosedSelectorException();
+        }
+        //处理待取消的SelectionKey(调用SelectionKey.cancel()方法取消)
         processDeregisterQueue();
         try {
+            //begin和end方法主要是为了处理线程中断，将线程的中断转化为Selector的wakeup方法，避免线程堵塞在IO操作上
             begin();
+            //调用EPollArrayWrapper的方法epoll获取已经就绪的pollfd
             pollWrapper.poll(timeout);
         } finally {
             end();
         }
         processDeregisterQueue();
+        //通过fdToKey查找文件描述符对应的SelectionKey，并更新之
         int numKeysUpdated = updateSelectedKeys();
         if (pollWrapper.interrupted()) {
             // Clear the wakeup pipe
@@ -172,10 +173,16 @@ class EPollSelectorImpl
     protected void implRegister(SelectionKeyImpl ski) {
         if (closed)
             throw new ClosedSelectorException();
+
+        //将channel对应的fd(文件描述符)和对应的SelectionKey放到fdToKey映射表中。fdToKey是一个map类型的结构，用来保存fd和key的映射关系
         SelChImpl ch = ski.channel;
         int fd = Integer.valueOf(ch.getFDVal());
         fdToKey.put(fd, ski);
+
+        //将channel对应的fd(文件描述符)添加到EPollArrayWrapper中，并强制初始化fd的事件为0
+        // ( 强制初始更新事件为0，因为该事件可能存在于之前被取消过的注册中。)
         pollWrapper.add(fd);
+        //将selectionKey放入到keys集合中
         keys.add(ski);
     }
 

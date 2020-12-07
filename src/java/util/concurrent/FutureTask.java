@@ -54,13 +54,22 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * NEW -> CANCELLED
      * NEW -> INTERRUPTING -> INTERRUPTED
      */
+    // 表示FutureTask当前的状态
     private volatile int state;
+    // NEW 新建状态，表示这个FutureTask还没有开始运行
     private static final int NEW          = 0;
+    // COMPLETING 完成状态， 表示FutureTask任务已经计算完毕了，
+    // 但是还有一些后续操作，例如唤醒等待线程操作，还没有完成。
     private static final int COMPLETING   = 1;
+    // FutureTask任务完结，正常完成，没有发生异常
     private static final int NORMAL       = 2;
+    // FutureTask任务完结，因为发生异常。
     private static final int EXCEPTIONAL  = 3;
+    // FutureTask任务完结，因为取消任务
     private static final int CANCELLED    = 4;
+    // FutureTask任务完结，也是取消任务，不过发起了中断运行任务线程的中断请求。
     private static final int INTERRUPTING = 5;
+    // FutureTask任务完结，也是取消任务，已经完成了中断运行任务线程的中断请求。
     private static final int INTERRUPTED  = 6;
 
     /** The underlying callable; nulled out after running */
@@ -158,6 +167,10 @@ public class FutureTask<V> implements RunnableFuture<V> {
     @Override
     public V get() throws InterruptedException, ExecutionException {
         int s = state;
+        /**
+         * 状态小于等于COMPLETING，表示FutureTask任务还没有完结，
+         * 所以调用awaitDone方法，让当前线程等待
+         */
         //判断状态
         if (s <= COMPLETING) {
             //主要的阻塞方法 其实这里是挂起等待
@@ -176,6 +189,12 @@ public class FutureTask<V> implements RunnableFuture<V> {
         if (unit == null) {
             throw new NullPointerException();
         }
+        /**
+         * 状态小于等于COMPLETING，表示FutureTask任务还没有完结，
+         * 所以调用awaitDone方法，让当前线程等待。
+         * 与get()不同的是，如果到了规定时间，任务状态仍然是小于等于COMPLETING，
+         * 那么就抛出TimeoutException超时异常
+         */
         int s = state;
         if (s <= COMPLETING &&
             (s = awaitDone(true, unit.toNanos(timeout))) <= COMPLETING) {

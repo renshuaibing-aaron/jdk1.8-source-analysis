@@ -212,16 +212,18 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      * tags.
      */
 
+    //volatie修饰的任务状态值,由ForkJoinPool或工作线程修改.
     /** The run status of this task */
     volatile int status; // accessed directly by pool and workers
-    static final int DONE_MASK   = 0xf0000000;  // mask out non-completion bits
-    static final int NORMAL      = 0xf0000000;  // must be negative
-    static final int CANCELLED   = 0xc0000000;  // must be < NORMAL
-    static final int EXCEPTIONAL = 0x80000000;  // must be < CANCELLED
-    static final int SIGNAL      = 0x00010000;  // must be >= 1 << 16
-    static final int SMASK       = 0x0000ffff;  // short bits for tags
+    static final int DONE_MASK   = 0xf0000000;  // mask out non-completion bits 用于屏蔽完成状态位.
+    static final int NORMAL      = 0xf0000000;  // must be negative 表示正常完成,是负值.
+    static final int CANCELLED   = 0xc0000000;  // must be < NORMAL 表示被取消,负值,且小于NORMAL
+    static final int EXCEPTIONAL = 0x80000000;  // must be < CANCELLED 异常完成,负值,且小于CANCELLED
+    static final int SIGNAL      = 0x00010000;  // must be >= 1 << 16 用于signal,必须不小于1<<16,默认为1<<16.
+    static final int SMASK       = 0x0000ffff;  // short bits for tags 后十六位的task标签
 
     /**
+     * 标记当前task的completion状态,同时根据情况唤醒等待该task的线程
      * Marks completion and wakes up threads waiting to join this
      * task.
      *
@@ -230,17 +232,23 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      */
     private int setCompletion(int completion) {
         for (int s;;) {
+            //开启一个循环,如果当前task的status已经是各种完成(小于0),则直接返回status,这个status可能是某一次循环前被其他线程完成.
             if ((s = status) < 0)
                 return s;
+            //尝试将原来的status设置为它与completion按位或的结果.
             if (U.compareAndSwapInt(this, STATUS, s, s | completion)) {
                 if ((s >>> 16) != 0)
+                    //此处体现了SIGNAL的标记作用,很明显,只要task完成(包含取消或异常),或completion传入的值不小于1<<16,
+                    //就可以起到唤醒其他线程的作用.
                     synchronized (this) { notifyAll(); }
+                //cas成功,返回参数中的completion.
                 return completion;
             }
         }
     }
 
     /**
+     * //final修饰,运行ForkJoinTask的核心方法.
      * Primary execution method for stolen tasks. Unless done, calls
      * exec and records status if completed, but doesn't wait for
      * completion otherwise.
@@ -249,15 +257,20 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      */
     final int doExec() {
         int s; boolean completed;
+        //仅未完成的任务会运行,其他情况会忽略.
         if ((s = status) >= 0) {
             try {
+                //调用exec
                 completed = exec();
             } catch (Throwable rex) {
+                //发生异常,用setExceptionalCompletion设置结果
                 return setExceptionalCompletion(rex);
             }
             if (completed)
+                //正常完成,调用前面说过的setCompletion,参数为normal,并将返回值作为结果s.
                 s = setCompletion(NORMAL);
         }
+        //返回s
         return s;
     }
 
@@ -418,30 +431,41 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
 
     /**
      * Records exception and sets status.
-     *
+     *记录异常完成
      * @return status on exit
      */
     final int recordExceptionalCompletion(Throwable ex) {
         int s;
         if ((s = status) >= 0) {
+            //只能是异常态的status可以记录.
+            //hash值禁止重写,不使用子类的hashcode函数.
             int h = System.identityHashCode(this);
             final ReentrantLock lock = exceptionTableLock;
+            //异常锁,加锁
             lock.lock();
             try {
+                //抹除脏异常,后面叙述
                 expungeStaleExceptions();
-                ExceptionNode[] t = exceptionTable;
+                //异常表数组.ExceptionNode后面叙述.
+                ExceptionNode[] t = exceptionTable; //exceptionTable是一个全局的静态常量,后面叙述
+                //用hash值和数组长度进行与运算求一个初始的索引
                 int i = h & (t.length - 1);
                 for (ExceptionNode e = t[i]; ; e = e.next) {
+                    //找到空的索引位,就创建一个新的ExceptionNode,保存this,异常对象并退出循环
                     if (e == null) {
                         t[i] = new ExceptionNode(this, ex, t[i]);
                         break;
                     }
-                    if (e.get() == this) // already present
+                    if (e.get() == this) // already present //已设置在相同的索引位置的链表中,退出循环
+                        //否则e指向t[i]的next,进入下个循环,直到发现判断包装this这个ForkJoinTask的ExceptionNode已经出现在t[i]这个链表并break(2),
+                        //或者直到e是null,意味着t[i]出发开始的链表并无包装this的ExceptionNode,则将构建一个新的ExceptionNode并置换t[i],
+                        //将原t[i]置为它的next(1).整个遍历判断和置换过程处在锁中进行.
                         break;
                 }
             } finally {
                 lock.unlock();
             }
+            //记录成功,将当前task设置为异常完成.
             s = setCompletion(EXCEPTIONAL);
         }
         return s;
@@ -449,17 +473,20 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
 
     /**
      * Records exception and possibly propagates.
-     *
+     *记录异常并且在符合条件时传播异常行为
      * @return status on exit
      */
     private int setExceptionalCompletion(Throwable ex) {
+        //首先记录异常信息到结果
         int s = recordExceptionalCompletion(ex);
         if ((s & DONE_MASK) == EXCEPTIONAL)
+            //status去除非完成态标志位(只保留前4位),等于EXCEPTIONAL.内部传播异常
             internalPropagateException(ex);
         return s;
     }
 
     /**
+     * internalPropagateException方法是一个空方法,留给子类实现,可用于completer之间的异常传递
      * Hook for exception propagation support for tasks with completers.
      */
     void internalPropagateException(Throwable ex) {

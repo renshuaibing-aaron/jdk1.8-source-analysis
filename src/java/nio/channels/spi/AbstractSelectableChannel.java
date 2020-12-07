@@ -178,6 +178,7 @@ public abstract class AbstractSelectableChannel
             if (blocking) {
                 throw new IllegalBlockingModeException();
             }
+            //如果该channel和selector已经注册过，则直接添加事件和附件
             SelectionKey k = findKey(sel);
             if (k != null) {
                 k.interestOps(ops);
@@ -190,7 +191,9 @@ public abstract class AbstractSelectableChannel
                         throw new ClosedChannelException();
                     }
                     //sun.nio.ch.SelectorImpl#register
+                    //否则通过selector实现注册过程。继续调用SelectorImp的register方法
                     k = ((AbstractSelector)sel).register(this, ops, att);
+                    //addKey(k)是将注册的key添加到socketchannel的成员变量keys[]中
                     addKey(k);
                 }
             }

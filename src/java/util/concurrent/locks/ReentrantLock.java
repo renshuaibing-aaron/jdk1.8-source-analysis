@@ -106,6 +106,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      * at which time the lock hold count is set to one.
      */
     public void lock() {
+        //两种实现 根据是否是公平锁进行不同的实现
         sync.lock();
     }
 
@@ -613,6 +614,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             final Thread current = Thread.currentThread();
             int c = getState();
             if (c == 0) {
+                //先抢锁
                 if (compareAndSetState(0, acquires)) {
                     setExclusiveOwnerThread(current);
                     return true;
@@ -621,7 +623,9 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             else if (current == getExclusiveOwnerThread()) {
                 int nextc = c + acquires;
                 if (nextc < 0) // overflow
+                {
                     throw new Error("Maximum lock count exceeded");
+                }
                 setState(nextc);
                 return true;
             }
@@ -698,12 +702,14 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             if (compareAndSetState(0, 1)) {
                 setExclusiveOwnerThread(Thread.currentThread());
             } else {
+                //AQS 来实现
                 acquire(1);
             }
         }
 
         @Override
         protected final boolean tryAcquire(int acquires) {
+            //非公平锁的实现
             return nonfairTryAcquire(acquires);
         }
     }
@@ -719,6 +725,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
          */
         @Override
         final void lock() {
+            //由AQS实现
             acquire(1);
         }
 

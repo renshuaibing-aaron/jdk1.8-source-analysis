@@ -1,6 +1,10 @@
 package aaron.ren.nio.zerocopy;
 
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -8,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Scanner;
 
 public class MappedByteBufferTest {
 
@@ -29,12 +34,11 @@ public class MappedByteBufferTest {
 
         try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.READ,
                 StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)
-
         )
-
         {
             MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, bytes.length);
             if (mappedByteBuffer != null) {
+                //强制刷盘进行 直接内存的使用
                 mappedByteBuffer.put(bytes);
                 mappedByteBuffer.force();
             }
@@ -58,4 +62,27 @@ public class MappedByteBufferTest {
             e.printStackTrace();
         }
     }
+
+    public static void readFromFileByMappedByteBuffer2() {
+        File file = new File("D://data.txt");
+        long len = file.length();
+        byte[] ds = new byte[(int) len];
+
+        try {
+            MappedByteBuffer mappedByteBuffer = new RandomAccessFile(file, "r")
+                    .getChannel()
+                    .map(FileChannel.MapMode.READ_ONLY, 0, len);
+            for (int offset = 0; offset < len; offset++) {
+                byte b = mappedByteBuffer.get();
+                ds[offset] = b;
+            }
+
+            Scanner scan = new Scanner(new ByteArrayInputStream(ds)).useDelimiter(" ");
+            while (scan.hasNext()) {
+                System.out.print(scan.next() + " ");
+            }
+
+        } catch (IOException e) {}
+    }
+
 }

@@ -171,6 +171,8 @@ public abstract class SelectionKey {
     // -- Operation-set accessors --
 
     /**
+     * 通过interestOps来确定了selector在下一个选择操作的过程中将测试哪些操作类别的准备情况，操作事件是否是channel关注的。
+     * interestOps 在SelectionKey创建时，初始化为注册Selector时的ops值，这个值可通过sun.nio.ch.SelectionKeyImpl#interestOps(int)来改变
      * Retrieves this key's interest set.
      *
      * <p> It is guaranteed that the returned set will only contain operation

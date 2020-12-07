@@ -51,6 +51,8 @@ public class Main {
         FileOutputStream fos = new FileOutputStream(output);
         //输出文件通道
         FileChannel destFC = fos.getChannel();
+
+        //拷贝文件
         srcFC.transferTo(0, input.length(), destFC);
         long end = System.currentTimeMillis();
         System.out.println("ZeroCopy 用时为:" + (end - start));

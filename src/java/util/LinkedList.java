@@ -3,6 +3,8 @@ package java.util;
 import java.util.function.Consumer;
 
 /**
+ * 其实这个是双端队列
+ * 双向循环列表  比较牛逼 既可以当做栈 又可以当队列使用
  * Doubly-linked list implementation of the {@code List} and {@code Deque}
  * interfaces.  Implements all optional list operations, and permits all
  * elements (including {@code null}).
@@ -150,10 +152,11 @@ public class LinkedList<E>
         f.item = null;
         f.next = null; // help GC
         first = next;
-        if (next == null)
+        if (next == null) {
             last = null;
-        else
+        } else {
             next.prev = null;
+        }
         size--;
         modCount++;
         return element;

@@ -36,8 +36,7 @@ import java.util.Iterator;
  * Selector implementation based on the Solaris event port mechanism.
  */
 
-class EventPortSelectorImpl
-    extends SelectorImpl
+class EventPortSelectorImpl   extends SelectorImpl
 {
     private final EventPortWrapper pollWrapper;
 

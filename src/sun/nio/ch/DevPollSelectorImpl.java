@@ -35,8 +35,7 @@ import sun.misc.*;
 /**
  * An implementation of Selector for Solaris.
  */
-class DevPollSelectorImpl
-    extends SelectorImpl
+class DevPollSelectorImpl    extends SelectorImpl
 {
 
     // File descriptors used for interrupt

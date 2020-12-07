@@ -4,6 +4,8 @@ import java.util.function.Consumer;
 import sun.misc.SharedSecrets;
 
 /**
+ * 优先级别队列
+ * 数据结构是堆
  * An unbounded priority {@linkplain Queue queue} based on a priority heap.
  * The elements of the priority queue are ordered according to their
  * {@linkplain Comparable natural ordering}, or by a {@link Comparator}
@@ -59,10 +61,11 @@ public class PriorityQueue<E> extends AbstractQueue<E>
     implements java.io.Serializable {
 
     private static final long serialVersionUID = -7720805057305804111L;
-
+    //默认用于存储节点信息的数组的大小
     private static final int DEFAULT_INITIAL_CAPACITY = 11;
 
     /**
+     * //用于存储节点信息的数组
      * Priority queue represented as a balanced binary heap: the two
      * children of queue[n] are queue[2*n+1] and queue[2*(n+1)].  The
      * priority queue is ordered by comparator, or by the elements'
@@ -72,18 +75,20 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      */
     transient Object[] queue; // non-private to simplify nested class access
 
-    /**
+    /**数组中实际存放元素的个数
      * The number of elements in the priority queue.
      */
     private int size = 0;
 
     /**
+     * Comparator比较器
      * The comparator, or null if priority queue uses elements'
      * natural ordering.
      */
     private final Comparator<? super E> comparator;
 
     /**
+     * 用于记录修改次数的变量
      * The number of times this priority queue has been
      * <i>structurally modified</i>.  See AbstractList for gory details.
      */
@@ -139,8 +144,9 @@ public class PriorityQueue<E> extends AbstractQueue<E>
                          Comparator<? super E> comparator) {
         // Note: This restriction of at least one is not actually needed,
         // but continues for 1.5 compatibility
-        if (initialCapacity < 1)
+        if (initialCapacity < 1) {
             throw new IllegalArgumentException();
+        }
         this.queue = new Object[initialCapacity];
         this.comparator = comparator;
     }
@@ -307,17 +313,20 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      * @throws NullPointerException if the specified element is null
      */
     public boolean offer(E e) {
-        if (e == null)
+        if (e == null) {
             throw new NullPointerException();
+        }
         modCount++;
         int i = size;
-        if (i >= queue.length)
+        if (i >= queue.length) {
             grow(i + 1);
+        }
         size = i + 1;
-        if (i == 0)
+        if (i == 0) {
             queue[0] = e;
-        else
+        } else {
             siftUp(i, e);
+        }
         return true;
     }
 
@@ -505,10 +514,12 @@ public class PriorityQueue<E> extends AbstractQueue<E>
                 (forgetMeNot != null && !forgetMeNot.isEmpty());
         }
 
+        @Override
         @SuppressWarnings("unchecked")
         public E next() {
-            if (expectedModCount != modCount)
+            if (expectedModCount != modCount) {
                 throw new ConcurrentModificationException();
+            }
             if (cursor < size)
                 return (E) queue[lastRet = cursor++];
             if (forgetMeNot != null) {
@@ -617,10 +628,11 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      * @param x the item to insert
      */
     private void siftUp(int k, E x) {
-        if (comparator != null)
+        if (comparator != null) {
             siftUpUsingComparator(k, x);
-        else
+        } else {
             siftUpComparable(k, x);
+        }
     }
 
     @SuppressWarnings("unchecked")

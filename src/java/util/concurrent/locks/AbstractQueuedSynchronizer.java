@@ -411,8 +411,9 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
          * fails or if status is changed by waiting thread.
          */
         int ws = node.waitStatus;
-        if (ws < 0)
+        if (ws < 0) {
             compareAndSetWaitStatus(node, ws, 0);
+        }
 
         /*
          * Thread to unpark is held in successor, which is normally
@@ -423,16 +424,19 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
         Node s = node.next;
         if (s == null || s.waitStatus > 0) {
             s = null;
-            for (Node t = tail; t != null && t != node; t = t.prev)
+            for (Node t = tail; t != null && t != node; t = t.prev) {
                 if (t.waitStatus <= 0)
                     s = t;
+            }
         }
-        if (s != null)
+        if (s != null) {
             LockSupport.unpark(s.thread);
+        }
     }
     /**
-     * 这个可以和下面的进行对比来看 独占锁的释放只是激活队列里面的下个节点
-     * 共享锁的获取是激活触发队列里面的所有节点
+     * 释放共享锁
+     * 独占锁的释放只是激活队列里面的下个节点
+     * 共享锁的释放是激活触发队列里面的所有节点
      * Releases in shared mode.  Implemented by unblocking one or more
      * threads if {@link #tryReleaseShared} returns true.
      *
@@ -442,7 +446,12 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
      * @return the value returned from {@link #tryReleaseShared}
      */
     public final boolean releaseShared(int arg) {
+
+        //这个tryReleaseShared方法 由具体的子类来进行实现
+        //CountDownLatch ->只有当 state 减为 0 的时候，tryReleaseShared 才返回 true 否则只是简单的 state = state - 1
         if (tryReleaseShared(arg)) {
+
+            //唤醒线程 由AQS实现
             doReleaseShared();
             return true;
         }
@@ -470,6 +479,12 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
         return false;
     }
     /**
+     * 调用这个方法 的时候 state=0
+     * 什么时候会调用这个方法
+     * CountDownLatch 应用是两个时候 第一个是执行CountDown 时发现state=0 会执行这个方法 唤醒阻塞的队列
+     * 队列中是一个头结点和线程结点 然后执行方法内部的unparkSuccessor  注意这时候可能会引发第二次执行
+     * 在唤醒头结点的第二个节点(事实上的阻塞线程结点) 查看线程wait的源码可以知道 当线程被唤醒后 阻塞线程会变成头结点 随机引发执行
+     * 唤醒下面的节点 也就是执行本方法doReleaseShared() 会引发链式反应
      * Release action for shared mode -- signals successor and ensures
      * propagation. (Note: For exclusive mode, release just amounts
      * to calling unparkSuccessor of head if it needs signal.)
@@ -490,17 +505,28 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
             Node h = head;
             if (h != null && h != tail) {
                 int ws = h.waitStatus;
+                // 查看头结点的status的值
                 if (ws == Node.SIGNAL) {
-                    if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0))
+                    // 将 head 的 waitStatue 设置为 0 自旋
+                    if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0)) {
                         continue;            // loop to recheck cases
+                    }
+                    //唤醒head的后继节点 也就是阻塞中的第一个节点
                     unparkSuccessor(h);
                 }
                 else if (ws == 0 &&
-                         !compareAndSetWaitStatus(h, 0, Node.PROPAGATE))
+                         !compareAndSetWaitStatus(h, 0, Node.PROPAGATE)) {
                     continue;                // loop on failed CAS
+                }
             }
+            //根据代码注释 说的意思是 假如此时头结点变了 会继续自旋
+            // 第一种情况 h != head 原因 因为执行  unparkSuccessor(h); 前面唤醒的线程已经占领了 head，那么再循环
+            //     其实这个大可不必 因为唤醒的线程 同样会执行这个操作  唯一的解释便是 吞吐量吧
+            // 第二种情况 h == head 原因有二 没有了等待线程 或者还没有及时更新头结点
             if (h == head)                   // loop if head changed
+            {
                 break;
+            }
         }
     }
 
@@ -531,10 +557,12 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
          * racing acquires/releases, so most need signals now or soon
          * anyway.
          */
+        // 下面说的是，唤醒当前 node 之后的节点
         if (propagate > 0 || h == null || h.waitStatus < 0 ||
             (h = head) == null || h.waitStatus < 0) {
             Node s = node.next;
             if (s == null || s.isShared())
+                //AQS 自己实现
                 doReleaseShared();
         }
     }
@@ -698,6 +726,7 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
     }
 
     /**
+     * 注意这个地方判断和不可中断的区别  可中断是指 这个时候 对于中断异常直接抛出了
      * Acquires in exclusive interruptible mode.
      * @param arg the acquire argument
      */
@@ -715,12 +744,16 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
                     return;
                 }
                 if (shouldParkAfterFailedAcquire(p, node) &&
-                    parkAndCheckInterrupt())
+                    parkAndCheckInterrupt()) {
+
+                    // todo 注意这个地方
                     throw new InterruptedException();
+                }
             }
         } finally {
-            if (failed)
+            if (failed) {
                 cancelAcquire(node);
+            }
         }
     }
 
@@ -804,20 +837,31 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
      */
     private void doAcquireSharedInterruptibly(int arg)
         throws InterruptedException {
+
+         //入队  第一次入队 会设置一个空的头结点 是不是要设置 需要唤醒的情况呢？ 不需要 只是简单入队 设置唤醒操作在
+        //下面这个方法shouldParkAfterFailedAcquire
         final Node node = addWaiter(Node.SHARED);
         boolean failed = true;
         try {
             for (;;) {
                 final Node p = node.predecessor();
+                //如果P是头几点 说明 node 是事实上的第一节点
                 if (p == head) {
+                    //tryAcquireShared 由各个子类进行实现
+                    //CountDownLatch -> (getState() == 0) ? 1 : -1; 说明一般wait方法时返回的是-1 继续执行doAcquireSharedInterruptibly
                     int r = tryAcquireShared(arg);
                     if (r >= 0) {
+                        //线程被唤醒  会走到这个地方
+                        //见名知意占领head唤醒其他线程
                         setHeadAndPropagate(node, r);
                         p.next = null; // help GC
                         failed = false;
                         return;
                     }
                 }
+                //shouldParkAfterFailedAcquire AQS自己实现  这个主要作用是设置前面 的 waitStatus 值设置为 -1
+                //parkAndCheckInterrupt  AQS自己实现 方法很简单 就是阻塞LockSupport.park(this); 等待被唤醒 什么时间被唤醒 返回线程的中断状态
+                //注意parkAndCheckInterrupt 这个方法返回true 表示是中断
                 if (shouldParkAfterFailedAcquire(p, node) &&
                     parkAndCheckInterrupt())
                     throw new InterruptedException();
@@ -1020,9 +1064,10 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
      *        {@link #tryAcquire} but is otherwise uninterpreted and
      *        can represent anything you like.
      */
-     //公平锁的加锁过程
+     //加锁过程
     public final void acquire(int arg) {
 
+        //FairSync 实现先查看是不是已经有队列 ...
         boolean firstLogic = !tryAcquire(arg);  //尝试加锁  只有加锁失败 if循环才往下走  这个方法需要子类自己去实现
         // 加锁失败的逻辑  进入park  然后进行加入队列里面
         //下面这一行是把当前线程封装成一个NODE 将当前线程加入到CLH队列的尾部 并且方法参数是用的Node.EXCLUSIVE ，表示独占模式
@@ -1125,10 +1170,14 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
      */
     public final void acquireSharedInterruptibly(int arg)
             throws InterruptedException {
+        //代表这个方法可中断
         if (Thread.interrupted()) {
             throw new InterruptedException();
         }
+        //tryAcquireShared 由各个子类进行实现
+        //CountDownLatch -> (getState() == 0) ? 1 : -1; 说明一般wait方法时返回的是-1 继续执行doAcquireSharedInterruptibly
         if (tryAcquireShared(arg) < 0) {
+            //AQS  自己实现 可中断的获取锁
             doAcquireSharedInterruptibly(arg);
         }
     }
@@ -1911,6 +1960,7 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
 
         /**
          * todo  注意这个方法执行之前 已经获取了锁
+         * 这个方法会阻塞，直到调用 signal 方法（指 signal() 和 signalAll()，下同），或被中断
          * Implements interruptible condition wait.
          * <ol>
          * <li> If current thread is interrupted, throw InterruptedException.
@@ -1940,8 +1990,8 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
             int interruptMode = 0;
 
             // todo注意这个地方退出循环 有两个条件
-            //   1. 这个节点已经在阻塞队列上了
-             //     2.线程被中断
+            //     1. 这个节点已经在阻塞队列上了 针对的是第一个条件isOnSyncQueue(node) 返回 true
+             //     2.线程被中断 checkInterruptWhileWaiting(node)) != 0
             // 判断这个节点是否在 AQS 队列上,第一次判断总是返回 false
             while (!isOnSyncQueue(node)) {
                 // 第一次总是 park 自己,开始阻塞等待
@@ -1952,9 +2002,6 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
                 // signal 的时候我们说过，转移以后的前驱节点取消了，或者对前驱节点的CAS操作失败了
                 //  假唤醒。这个也是存在的，和 Object.wait() 类似，都有这个问题
                 LockSupport.park(this);
-
-
-
                 // 线程判断自己在等待过程中是否被中断了,如果没有中断,则再次循环,会在 isOnSyncQueue 中判断自己是否在队列上.
                 //  isOnSyncQueue 判断当前 node 状态,如果是 CONDITION 状态,或者不在队列上了(JDK 注释说,由于 CAS 操作队列上的节点可能会失败),就继续阻塞.
                 //  isOnSyncQueue 判断当前 node 还在队列上且不是 CONDITION 状态了,就结束循环和阻塞.
@@ -1964,6 +2011,7 @@ public abstract class AbstractQueuedSynchronizer   extends AbstractOwnableSynchr
                     break;
                 }
             }
+
             // 当这个线程醒来,会尝试拿锁, 当 acquireQueued 返回 false 就是拿到锁了.
             // interruptMode != THROW_IE >>> 表示这个线程没有成功将 node 入队,但 signal 执行了 enq 方法让其入队了.
             // 将这个变量设置成 REINTERRUPT.

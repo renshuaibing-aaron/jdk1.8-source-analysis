@@ -82,6 +82,11 @@ public abstract class SelectableChannel
     public abstract SelectorProvider provider();
 
     /**
+     * 因为channel 有不同的实现 针对不同的实现 会有不同的感兴趣事件
+     * ServerSocketChannel -->return (SelectionKey.OP_READ| SelectionKey.OP_WRITE| SelectionKey.OP_CONNECT);   //即1|4|8  1101
+     *ServerSocketChannel--> return SelectionKey.OP_ACCEPT;   // 16
+     *DatagramChannel-->// 1|4 return (SelectionKey.OP_READ| SelectionKey.OP_WRITE);
+     *
      * Returns an <a href="SelectionKey.html#opsets">operation set</a>
      * identifying this channel's supported operations.  The bits that are set
      * in this integer value denote exactly the operations that are valid for
@@ -249,6 +254,7 @@ public abstract class SelectableChannel
      * @return  A key representing the registration of this channel with
      *          the given selector
      */
+    //注册方法
     public final SelectionKey register(Selector sel, int ops)
         throws ClosedChannelException
     {

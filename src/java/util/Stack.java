@@ -1,31 +1,7 @@
-/*
- * Copyright (c) 1994, 2010, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.util;
 
 /**
+ * java ջ�Ľṹ
  * The <code>Stack</code> class represents a last-in-first-out
  * (LIFO) stack of objects. It extends class <tt>Vector</tt> with five
  * operations that allow a vector to be treated as a stack. The usual
@@ -36,7 +12,7 @@ package java.util;
  * <p>
  * When a stack is first created, it contains no items.
  *
- * <p>A more complete and consistent set of LIFO stack operations is
+ * <p>A more comLinkedListplete and consistent set of LIFO stack operations is
  * provided by the {@link Deque} interface and its implementations, which
  * should be used in preference to this class.  For example:
  * <pre>   {@code
@@ -45,8 +21,7 @@ package java.util;
  * @author  Jonathan Payne
  * @since   JDK1.0
  */
-public
-class Stack<E> extends Vector<E> {
+public  class Stack<E> extends Vector<E> {
     /**
      * Creates an empty Stack.
      */

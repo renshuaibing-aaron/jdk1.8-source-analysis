@@ -217,7 +217,9 @@ public abstract class Selector implements Closeable {
      */
     public static Selector open() throws IOException {
         //根据实际的系统来实现 windows或者是linux系统
-        return SelectorProvider.provider().openSelector();
+        //windows -->WindowsSelectorProvider
+        SelectorProvider provider = SelectorProvider.provider();
+        return provider.openSelector();
     }
 
     /**

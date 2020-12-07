@@ -453,6 +453,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public void add(int index, E element) {
+
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);  // Increments modCount!!
@@ -827,6 +828,8 @@ public class ArrayList<E> extends AbstractList<E>
     private class Itr implements Iterator<E> {
         int cursor;       // index of next element to return
         int lastRet = -1; // index of last element returned; -1 if no such
+
+        //这个是什么东西呢
         int expectedModCount = modCount;
 
         public boolean hasNext() {
@@ -835,6 +838,7 @@ public class ArrayList<E> extends AbstractList<E>
 
         @SuppressWarnings("unchecked")
         public E next() {
+            // 这个方法主要是检查光标是否越界的
             checkForComodification();
             int i = cursor;
             if (i >= size)
@@ -883,9 +887,16 @@ public class ArrayList<E> extends AbstractList<E>
             checkForComodification();
         }
 
+        /**
+         * 在对一个集合对象进行跌代操作的同时，并不限制对集合对象的元素进行操作
+         * 这些操作包括一些可能引起跌代错误的add()或remove()等危险操作。
+         * 在AbstractList中，使用了一个简单的机制来规避这些风险。
+         * 这就是modCount和expectedModCount的作用所在
+         */
         final void checkForComodification() {
-            if (modCount != expectedModCount)
+            if (modCount != expectedModCount) {
                 throw new ConcurrentModificationException();
+            }
         }
     }
 
@@ -1225,6 +1236,8 @@ public class ArrayList<E> extends AbstractList<E>
         }
     }
 
+
+    //todo  著名的foreach方法
     @Override
     public void forEach(Consumer<? super E> action) {
         Objects.requireNonNull(action);

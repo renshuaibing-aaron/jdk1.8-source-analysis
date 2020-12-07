@@ -7,7 +7,6 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * @author xiezhengchao
- * @since 18/1/3 ÉÏÎç9:45.
  * ÏÞÁ÷Æ÷
  */
 public class RateLimiter{

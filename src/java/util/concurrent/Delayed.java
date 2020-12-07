@@ -1,41 +1,10 @@
-/*
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/*
- *
- *
- *
- *
- *
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- */
-
 package java.util.concurrent;
 
 /**
+ * 延迟队列元素  这里可以看到延迟队列实现了Comparable 接口
+ * 说明 在用户自定义的延迟队列元素 需要实现两个方法 getDelay 和compareTo
+ * getDelay--定义剩余到期时间
+ * compareTo--元素的排序规则 影响元素的获取顺序
  * A mix-in style interface for marking objects that should be
  * acted upon after a given delay.
  *

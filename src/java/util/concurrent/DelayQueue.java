@@ -6,6 +6,8 @@ import java.util.*;
 
 /**
  * 这个队列是干嘛的
+ *     无界阻塞延迟队列
+ *     本质是DelayedQuene的元素存储交由优先级队列存放
  * An unbounded {@linkplain BlockingQueue blocking queue} of
  * {@code Delayed} elements, in which an element can only be taken
  * when its delay has expired.  The <em>head</em> of the queue is that
@@ -37,6 +39,7 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
     implements BlockingQueue<E> {
 
     private final transient ReentrantLock lock = new ReentrantLock();
+    //优先级队列
     private final PriorityQueue<E> q = new PriorityQueue<E>();
 
     /**
@@ -93,19 +96,23 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
     }
 
     /**
+     * 插入到阻塞队列
      * Inserts the specified element into this delay queue.
      *
      * @param e the element to add
      * @return {@code true}
      * @throws NullPointerException if the specified element is null
      */
+    @Override
     public boolean offer(E e) {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
             q.offer(e);
             if (q.peek() == e) {
+                //这里是干什么的？
                 leader = null;
+                //唤醒操作的是什么？
                 available.signal();
             }
             return true;
@@ -140,63 +147,71 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
     }
 
     /**
+     * 非阻塞的获取
      * Retrieves and removes the head of this queue, or returns {@code null}
      * if this queue has no elements with an expired delay.
      *
      * @return the head of this queue, or {@code null} if this
      *         queue has no elements with an expired delay
      */
+    @Override
     public E poll() {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
             E first = q.peek();
-            if (first == null || first.getDelay(NANOSECONDS) > 0)
+            if (first == null || first.getDelay(NANOSECONDS) > 0) {
                 return null;
-            else
+            } else {
                 return q.poll();
+            }
         } finally {
             lock.unlock();
         }
     }
 
     /**
+     * 延迟队列的阻塞获取
      * Retrieves and removes the head of this queue, waiting if necessary
      * until an element with an expired delay is available on this queue.
      *
      * @return the head of this queue
      * @throws InterruptedException {@inheritDoc}
      */
+    @Override
     public E take() throws InterruptedException {
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
             for (;;) {
                 E first = q.peek();
-                if (first == null)
+                if (first == null) {   //没有元素 直接让出线程   线程等待
                     available.await();
-                else {
+                } else {
                     long delay = first.getDelay(NANOSECONDS);
-                    if (delay <= 0)
+                    if (delay <= 0) {   //的确有元素到期
                         return q.poll();
+                    }
                     first = null; // don't retain ref while waiting
-                    if (leader != null)
-                        available.await();
-                    else {
+                    if (leader != null) {
+                        available.await();// 其它线程在leader线程TIMED_WAITING期间，会进入等待状态，这样可以只有一个线程去等待到时唤醒，避免大量唤醒操作
+                    } else {
                         Thread thisThread = Thread.currentThread();
                         leader = thisThread;
                         try {
-                            available.awaitNanos(delay);
+                            available.awaitNanos(delay);// 等待剩余时间后，再尝试获取元素，他在等待期间，由于leader是当前线程，所以其它线程会等待。
                         } finally {
-                            if (leader == thisThread)
+                            if (leader == thisThread) {
                                 leader = null;
+                            }
                         }
                     }
                 }
             }
         } finally {
-            if (leader == null && q.peek() != null)
+            if (leader == null && q.peek() != null) {
                 available.signal();
+            }
             lock.unlock();
         }
     }

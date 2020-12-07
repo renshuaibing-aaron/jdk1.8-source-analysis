@@ -1,6 +1,7 @@
 package aaron.ren.pragram.sort.outsort;
 
 //去除重复并排序
+
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Random;
@@ -16,8 +17,8 @@ public class BitMapSort {
     int N = mmax - mmin + 1;
 
     public static void main(String args[]) {
-        new BitMapSort().findDuplicate();
-        new BitMapSort().findDup_jdk();
+        //new BitMapSort().findDuplicate();
+       new BitMapSort().findDup_jdk();
     }
 
     public void findDup_jdk() {
@@ -34,8 +35,8 @@ public class BitMapSort {
                 count++;
             }
         }
-        System.out.println();
-        System.out.println("排序后的数组大小为：" + count );
+        System.out.println("排序后的数组大小为：" + count);
+
         System.out.println("*******调用JDK中的库方法--结束********");
     }
 
@@ -76,7 +77,7 @@ public class BitMapSort {
     public int[] getArray(int ARRNUM) {
 
         @SuppressWarnings("unused")
-        int array1[] = { 1000, 1002, 1032, 1033, 6543, 9999, 1033, 1000 };
+        int array1[] = {1000, 1002, 1032, 1033, 6543, 9999, 1033, 1000};
 
         int array[] = new int[ARRNUM];
         System.out.println("数组大小：" + ARRNUM);
@@ -85,7 +86,7 @@ public class BitMapSort {
             array[i] = r.nextInt(N) + mmin;
         }
 
-        System.out.println(Arrays.toString(array));
+        System.out.println("排序前"+Arrays.toString(array));
         return array;
     }
 }

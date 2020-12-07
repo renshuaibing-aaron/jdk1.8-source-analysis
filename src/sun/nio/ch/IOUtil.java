@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
- *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
- *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
- */
-
 package sun.nio.ch;
 
 import java.io.FileDescriptor;
@@ -43,12 +18,25 @@ public class IOUtil {
 
     private IOUtil() { }                // No instantiation
 
+    /**
+     * 1和read过程类似，如果是直接内存，writeFromNativeBuffer方法传入bytebuffer,内部通过FileDispatcher进行写操作。
+     * 2申请一块DirectByteBuffer，bb大小为byteBuffer中的limit - position。
+     * 3复制byteBuffer中的数据到bb中。
+     * 4把数据从bb中写入到文件，底层由NativeDispatcher的write实现
+     * @param fd
+     * @param src
+     * @param position
+     * @param nd
+     * @return
+     * @throws IOException
+     */
     static int write(FileDescriptor fd, ByteBuffer src, long position,
                      NativeDispatcher nd)
         throws IOException
     {
-        if (src instanceof DirectBuffer)
+        if (src instanceof DirectBuffer) {
             return writeFromNativeBuffer(fd, src, position, nd);
+        }
 
         // Substitute a native buffer
         int pos = src.position();
@@ -83,8 +71,9 @@ public class IOUtil {
         int rem = (pos <= lim ? lim - pos : 0);
 
         int written = 0;
-        if (rem == 0)
+        if (rem == 0) {
             return 0;
+        }
         if (position != -1) {
             written = nd.pwrite(fd,
                                 ((DirectBuffer)bb).address() + pos,
@@ -92,8 +81,9 @@ public class IOUtil {
         } else {
             written = nd.write(fd, ((DirectBuffer)bb).address() + pos, rem);
         }
-        if (written > 0)
+        if (written > 0) {
             bb.position(pos + written);
+        }
         return written;
     }
 
@@ -182,22 +172,44 @@ public class IOUtil {
         }
     }
 
+    /** todo 如果是直接内存，则拷贝一次，如果是堆内存，read方法导致数据复制了两次
+     *  注意这里可以看出基于channel的文件读取机制
+      * 1如果申请的ByteBuffer是DirectBuffer类型，则直接将我们申请的内存传入，也就是将读到数据数据放入们申请的内存，然后返回。
+     * 2如果是堆内存，则申请一块和缓存同大小的DirectByteBuffer bb。
+     * 3读取数据到缓存bb，底层由NativeDispatcher的read实现。
+      * 4把bb的数据读取到dst（用户定义的缓存，在jvm中分配内存）。
+
+     * @param fd
+     * @param dst
+     * @param position
+     * @param nd
+     * @return
+     * @throws IOException
+     */
     static int read(FileDescriptor fd, ByteBuffer dst, long position,
                     NativeDispatcher nd)
         throws IOException
     {
-        if (dst.isReadOnly())
+        if (dst.isReadOnly()) {
             throw new IllegalArgumentException("Read-only buffer");
-        if (dst instanceof DirectBuffer)
+        }
+        if (dst instanceof DirectBuffer) {
+            //如果申请的ByteBuffer是DirectBuffer类型，则直接将我们申请的内存传入，也就是将读到数据数据放入们申请的内存，然后返回。
             return readIntoNativeBuffer(fd, dst, position, nd);
+        }
 
         // Substitute a native buffer
+        //如果是堆内存，则申请一块和缓存同大小的DirectByteBuffer bb。
         ByteBuffer bb = Util.getTemporaryDirectBuffer(dst.remaining());
         try {
+            //读取数据到缓存bb，底层由NativeDispatcher的read实现
             int n = readIntoNativeBuffer(fd, bb, position, nd);
             bb.flip();
             if (n > 0)
+                //把bb的数据读取到dst（用户定义的缓存，在jvm中分配内存）
+            {
                 dst.put(bb);
+            }
             return n;
         } finally {
             Util.offerFirstTemporaryDirectBuffer(bb);

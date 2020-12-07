@@ -1124,6 +1124,7 @@ public final class String     implements java.io.Serializable, Comparable<String
      *          value greater than {@code 0} if this string is
      *          lexicographically greater than the string argument.
      */
+    @Override
     public int compareTo(String anotherString) {
         int len1 = value.length;
         int len2 = anotherString.value.length;

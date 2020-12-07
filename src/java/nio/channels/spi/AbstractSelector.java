@@ -47,6 +47,7 @@ public abstract class AbstractSelector   extends Selector
     private AtomicBoolean selectorOpen = new AtomicBoolean(true);
 
     // The provider that created this selector
+    //AbstractSelector中设置Provider的值
     private final SelectorProvider provider;
 
     /**
@@ -59,6 +60,9 @@ public abstract class AbstractSelector   extends Selector
         this.provider = provider;
     }
 
+    //标识取消的key 的集合。因为保存了所有的key的keys我们没有修改的权限，所以只能将取消的key单独放在set集合中
+    //取消一个SelectionKey，不会立刻从Selector移除，它将被添加到Selector的cancelledKeys这个Set集合中，以便在下一次选择操作期间删除
+    //那么什么时间会真正删除？释放资源
     private final Set<SelectionKey> cancelledKeys = new HashSet<SelectionKey>();
 
     void cancel(SelectionKey k) {                       // package-private

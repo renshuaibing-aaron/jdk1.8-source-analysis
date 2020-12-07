@@ -450,6 +450,7 @@ public final class Integer extends Number implements Comparable<Integer> {
     }
 
     /**
+     * todo  将字符串转化为int类型 atoi
      * Parses the string argument as a signed integer in the radix
      * specified by the second argument. The characters in the string
      * must all be digits of the specified radix (as determined by
@@ -738,6 +739,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *             as an integer.
      */
     public static Integer valueOf(String s) throws NumberFormatException {
+        //todo  这个是考点 经常会进行
         return Integer.valueOf(parseInt(s, 10));
     }
 

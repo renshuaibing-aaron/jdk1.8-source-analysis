@@ -7,6 +7,7 @@ import java.util.*;
 
 /**
  * 定时执行的线程
+ *    可以定时执行或者定期执行  比Timer更强大
  * A {@link ThreadPoolExecutor} that can additionally schedule
  * commands to run after a given delay, or to execute
  * periodically. This class is preferable to {@link java.util.Timer}

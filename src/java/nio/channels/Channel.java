@@ -5,6 +5,7 @@ import java.io.Closeable;
 
 
 /**
+ * 通道，用于 I/O 操作的连接类似于原I/O中的流（Stream）
  * A nexus for I/O operations.
  *
  * <p> A channel represents an open connection to an entity such as a hardware

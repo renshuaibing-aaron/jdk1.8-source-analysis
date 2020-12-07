@@ -1002,11 +1002,14 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>    implements Concu
             if (tab == null || (n = tab.length) == 0) {
                 tab = initTable();
             }
+            //todo  注意这里在java内存模型中，我们已经知道每个线程都有一个工作内存，里面存储着table的副本，
+            // 虽然table是volatile修饰的，但不能保证线程每次都拿到table中的最新元素，
+            // Unsafe.getObjectVolatile可以直接获取指定内存的数据，保证了每次拿到数据都是最新的
             else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {
                 //根据 hash 值找到数组下标，如果对应的位置为空，就创建一个 Node 对象用CAS方式添加到容器。并跳出循环
                 //这里利用CAS操作 无锁操作
                 if (casTabAt(tab, i, null, new Node<K,V>(hash, key, value, null))) {
-                    break;                   // no lock when adding to empty bin
+                    break;                   // no lock when adding to empty bin  这里插入失败会进行自旋操作
                 }
             }
             //如果 hash 冲突，也就是对应的位置不为 null，则判断该槽是否被扩容了（-1 表示被扩容了），如果被扩容了，返回新的数组

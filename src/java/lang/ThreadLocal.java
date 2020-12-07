@@ -329,6 +329,17 @@ public class ThreadLocal<T> {
             }
         }
 
+      /*      //todo  如果采用下面这种强引用模式 会导致内存泄漏
+            static class EntryStrongReference {
+                Object value;
+                Object key;
+                EntryStrongReference(ThreadLocal<?> k, Object v) {
+                    this.key=k;  //这里变成了强引用
+                    value = v;
+                }
+            }
+    */
+
         /**
          * The initial capacity -- MUST be a power of two.
          */
@@ -437,6 +448,8 @@ public class ThreadLocal<T> {
             //计算hashCode
             int i = key.threadLocalHashCode & (table.length - 1);
             Entry e = table[i];
+
+            //注意这里的情况 类比HashMap的情况进行比较
             if (e != null && e.get() == key) {
                 return e;
             } else {

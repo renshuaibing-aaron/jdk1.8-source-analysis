@@ -132,6 +132,9 @@ import java.security.Permissions;
  * @author Doug Lea
  */
 @sun.misc.Contended
+//禁止伪共享
+//在1.8之前,一般通过补位的方式解决伪共享问题,1.8之后,
+// 官方使用@Contended注解,令虚拟机尽量注解标注的字段(字段的情况)或成员字段放置在不同的缓存行,从而规避了伪共享问题
 public class ForkJoinPool extends AbstractExecutorService {
 
     /*
@@ -740,8 +743,14 @@ public class ForkJoinPool extends AbstractExecutorService {
      * JVMs to try to keep instances apart.
      */
     @sun.misc.Contended
+    //它是一个支持工作窃取和外部提交任务的队列.显然,它的实例对内存部局十分敏感,
+    //WorkQueue本身的实例,或者内部数组元素均应避免共享同一缓存行.
     static final class WorkQueue {
 
+        //队列内部数组的初始容量,默认是2的12次方,它必须是2的几次方,且不能小于4.
+        //但它应该设置一个较大的值来减少队列间的缓存行共享.
+        //在前面的java运行时和54篇java官方文档术语中曾提到,jvm通常会将
+        //数组放在能够共享gc标记(如卡片标记)的位置,这样每一次写都会造成严重内存竞态.
         /**
          * Capacity of work-stealing queue array upon initialization.
          * Must be a power of two; at least 4, but should be larger to
@@ -753,6 +762,10 @@ public class ForkJoinPool extends AbstractExecutorService {
          */
         static final int INITIAL_QUEUE_CAPACITY = 1 << 13;
 
+
+        //最大内部数组容量,默认64M,也必须是2的平方,但不大于1<<(31-数组元素项宽度),
+        //根据官方注释,这可以确保无需计算索引概括,但定义一个略小于此的值有助于用户在
+        //系统饱合前捕获失控的程序.
         /**
          * Maximum size for queue arrays. Must be a power of two less
          * than or equal to 1 << (31 - width of array entry) to ensure
@@ -762,6 +775,7 @@ public class ForkJoinPool extends AbstractExecutorService {
          */
         static final int MAXIMUM_QUEUE_CAPACITY = 1 << 26; // 64M
 
+        // unsafe机制有关的字段.
         // Instance fields
         volatile int scanState;    // versioned, <0: inactive; odd:scanning
         int stackPred;             // pool stack (ctl) predecessor
@@ -1183,6 +1197,7 @@ public class ForkJoinPool extends AbstractExecutorService {
                     s != Thread.State.TIMED_WAITING);
         }
 
+        // unsafe机制有关的字段.
         // Unsafe mechanics. Note that some are (and must be) the same as in FJP
         private static final sun.misc.Unsafe U;
         private static final int  ABASE;
@@ -1195,16 +1210,23 @@ public class ForkJoinPool extends AbstractExecutorService {
                 U = sun.misc.Unsafe.getUnsafe();
                 Class<?> wk = WorkQueue.class;
                 Class<?> ak = ForkJoinTask[].class;
+                //top字段的句柄.
                 QTOP = U.objectFieldOffset
                     (wk.getDeclaredField("top"));
+                //qlock字段的句柄.
                 QLOCK = U.objectFieldOffset
                     (wk.getDeclaredField("qlock"));
+                //currentSteal的句柄
                 QCURRENTSTEAL = U.objectFieldOffset
                     (wk.getDeclaredField("currentSteal"));
+                //ABASE是ForkJoinTask数组的首地址.
                 ABASE = U.arrayBaseOffset(ak);
+                //scale代表数组元素的索引大小.它必须是2的平方.
                 int scale = U.arrayIndexScale(ak);
                 if ((scale & (scale - 1)) != 0)
                     throw new Error("data type scale not a power of two");
+                //计算ASHIFT,它是31与scale的高位0位数量的差值.因为上一步约定了scale一定是一个正的2的几次方,
+                //ASHIFT的结果一定会大于1.可以理解ASHIFT是数组索引大小的有效位数.
                 ASHIFT = 31 - Integer.numberOfLeadingZeros(scale);
             } catch (Exception e) {
                 throw new Error(e);

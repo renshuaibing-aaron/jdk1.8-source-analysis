@@ -38,6 +38,8 @@ HashMap¿ÉÒÔÎª¿Õ hashTable²»ÄÜ ÕâÀïÃæÉæ¼°µ½equal()·½·¨
 
 
 6.¶¼ËµHashMap Ïß³Ì²»°²È« ÄÄÀï²»°²È«£¿
+https://blog.csdn.net/linsongbin1/article/details/54708694
+https://blog.csdn.net/zhangjunli/article/details/80653283
 https://www.cnblogs.com/developer_chan/p/10450908.html
 https://blog.csdn.net/swpu_ocean/article/details/88917958
 HashMap µÄÏß³Ì²»°²È«±íÏÖÔÚHashMapÔÚ²¢·¢»·¾³ÏÂ¶àÏß³Ìputºó¿ÉÄÜµ¼ÖÂgetËÀÑ­»·£¬¾ßÌå±íÏÖÎªCPUÊ¹ÓÃÂÊ100%£¬¿´Ò»ÏÂtransferµÄ¹ı³Ì£¬¾ÍÊÇÔÚÀ©ÈİµÄ¹ı³ÌÖĞ²úÉú±Õ»· µ¼ÖÂÎÊÌâ
@@ -51,6 +53,8 @@ HashMap µÄÏß³Ì²»°²È«±íÏÖÔÚHashMapÔÚ²¢·¢»·¾³ÏÂ¶àÏß³Ìputºó¿ÉÄÜµ¼ÖÂgetËÀÑ­»·£¬¾ßÌå±
 
 
 7.hashmapÔÚjdk1.8Ö®Ç°²ÉÓÃµÄÊÇÍ·²å·¨  Ö®ºóÓÃµÄÊÇÎ²²å·¨ Ô­ÒòÊÇÊ²Ã´£¿£¿£¿£¿
+  Í·²å·¨ÔÚÁ½¸öÏß³ÌÍ¬Ê±À©ÈİµÄÊ±ºò »áÔì³É»·×´  È»ºó½øĞĞgetµÄÊ±ºò µ¼ÖÂËÀÑ­»·
+  https://blog.csdn.net/HNUST_LIZEMING/article/details/89334204
 
 
 8.ÖØµãÑ§Ï°ConcurrentHashMapµÄÀ©Èİ·½·¨ Õâ¸ö·½·¨µÄ´óÖÂ¹ı³Ì Í¨¹ıÁ½¸ö±êÖ¾Î»½øĞĞÀ©Èİ  ¶àÏß³Ì  ÔÚÀ©Èİ¹ı³ÌÖĞ²åÈë »á½øĞĞ×èÈû²åÈë È»ºó»á½øĞĞ°ïÖúÀ©Èİ²Ù×÷

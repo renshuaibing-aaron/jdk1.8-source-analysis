@@ -36,8 +36,7 @@ import sun.misc.*;
  * An abstract selector impl.
  */
 
-abstract class AbstractPollSelectorImpl
-    extends SelectorImpl
+abstract class AbstractPollSelectorImpl     extends SelectorImpl
 {
 
     // The poll fd array

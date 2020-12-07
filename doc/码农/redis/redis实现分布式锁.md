@@ -1,4 +1,4 @@
-ÀûÓÃredisÊµÏÖ·Ö²¼Ê½ËøÓĞ¶àÖÖ·½°¸
+ ÀûÓÃredisÊµÏÖ·Ö²¼Ê½ËøÓĞ¶àÖÖ·½°¸
 1.²ÉÓÃRedission ¿ò¼ÜÊµÏÖ Ê×ÏÈËµÃ÷Õâ¸öÓĞ¸öÈ±ÏİÔÚÄÄÀï£¿
 
 redisµÄÔ­×Ó½Å±¾luaÀûÓÃsetnaÀ´ÕùÇÀËø£¬È»ºóÔÙÓÃexpire¸øËø¼ÓÒ»¸ö¹ıÆÚÊ±¼ä·ÀÖ¹ËøÍü¼ÇÁËÊÍ·Å Õâ¸öÓĞ¸öÎÊÌâ¿ÉÄÜ»áµ¼ÖÂÕâÖĞ¼äå´»ú µ¼ÖÂËøÎŞ·¨ÊÍ·Å 
@@ -15,10 +15,12 @@ redisµÄÔ­×Ó½Å±¾luaÀûÓÃsetnaÀ´ÕùÇÀËø£¬È»ºóÔÙÓÃexpire¸øËø¼ÓÒ»¸ö¹ıÆÚÊ±¼ä·ÀÖ¹ËøÍü¼ÇÁ
 2.ÏîÄ¿ÖĞÊÇÔõÃ´Ê¹ÓÃ·Ö²¼Ê½ËøµÄ£¿
 ¹Ù·½ÍÆ¼ö²ÉÓÃRedlockËã·¨£¬¼´Ê¹ÓÃstringÀàĞÍ£¬¼ÓËøµÄÊ±ºò¸øµÄÒ»¸ö¾ßÌåµÄkey£¬È»ºóÉèÖÃÒ»¸öËæ»úµÄÖµ£»
 È¡ÏûËøµÄÊ±ºòÓÃÊ¹ÓÃlua½Å±¾À´ÏÈÖ´ĞĞ»ñÈ¡±È½Ï£¬È»ºóÔÙÉ¾³ıkey¡£
-SET resource_name my_random_value NX PX  30000
-if redis.call( "get" ,KEYS[ 1 ]) == ARGV[ 1 ] then
-return redis.call( "del" ,KEYS[ 1 ])
-else
-return  0
-end
+¼ÓËø :
+      SET resource_name my_random_value NX PX  30000
+È¡ÏûËø:
+    if redis.call( "get" ,KEYS[ 1 ]) == ARGV[ 1 ] then
+    return redis.call( "del" ,KEYS[ 1 ])
+    else
+    return  0
+    end
 

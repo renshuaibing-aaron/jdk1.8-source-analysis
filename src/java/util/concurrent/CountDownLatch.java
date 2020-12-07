@@ -139,12 +139,18 @@ public class CountDownLatch {
             return (getState() == 0) ? 1 : -1;
         }
 
+        /**
+         * 自旋的模式进行减少
+         * @param releases
+         * @return
+         */
         @Override
         protected boolean tryReleaseShared(int releases) {
             // Decrement count; signal when transition to zero
             for (;;) {
                 int c = getState();
                 if (c == 0) {
+                    //如果 已经是0了 就直接返回失败 也就意味着 没有必要唤醒线程
                     return false;
                 }
                 int nextc = c-1;
@@ -199,6 +205,7 @@ public class CountDownLatch {
      *         while waiting
      */
     public void await() throws InterruptedException {
+        //在AQS中实现 可中断的获取共享锁
         sync.acquireSharedInterruptibly(1);
     }
 

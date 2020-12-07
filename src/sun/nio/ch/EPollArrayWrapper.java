@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
- *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
- *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
- */
-
 package sun.nio.ch;
 
 import java.io.IOException;
@@ -33,6 +8,10 @@ import java.util.Map;
 import sun.security.action.GetIntegerAction;
 
 /**
+ *
+ * todo EpollArrayWapper将Linux的epoll相关系统调用封装成了native方法供EpollSelectorImpl使用
+ *  EPollArrayWrapper完成了对epoll文件描述符的构建，以及对linux系统的epoll指令操纵的封装。维护每次selection操作的结果，即epoll_wait结果的epoll_event数组。
+ *  EPollArrayWrapper操纵了一个linux系统下epoll_event结构的本地数组
  * Manipulates a native array of epoll_event structs on Linux:
  *
  * typedef union epoll_data {
@@ -117,7 +96,9 @@ class EPollArrayWrapper {
     // by file descriptor and stored as bytes for efficiency reasons. For
     // file descriptors higher than MAX_UPDATE_ARRAY_SIZE (unlimited case at
     // least) then the update is stored in a map.
+    // 使用数组保存事件变更, 数组的最大长度是MAX_UPDATE_ARRAY_SIZE, 最大64*1024
     private final byte[] eventsLow = new byte[MAX_UPDATE_ARRAY_SIZE];
+    // 超过数组长度的事件会缓存到这个map中，等待下次处理
     private Map<Integer,Byte> eventsHigh;
 
     // Used by release and updateRegistrations to track whether a file
@@ -127,9 +108,12 @@ class EPollArrayWrapper {
 
     EPollArrayWrapper() throws IOException {
         // creates the epoll file descriptor
+        //创建了epoll文件描述符
+        //epollCreate navative的实现在EPollArrayWrapper.c
         epfd = epollCreate();
 
         // the epoll_event array passed to epoll_wait
+        //构建了一个用于存放epoll_wait返回结果的epoll_event数组
         int allocationSize = NUM_EPOLLEVENTS * SIZE_EPOLLEVENT;
         pollArray = new AllocatedNativeObject(allocationSize, true);
         pollArrayAddress = pollArray.address();
@@ -207,6 +191,8 @@ class EPollArrayWrapper {
     }
 
     /**
+     * 首先会判断存放fd的数组updateDescriptors是否已满，如果满了，则进行扩容，
+     * 在原来的基础上加64，然后将fd保存到数组中。然后调用setUpdateEvents，设置fd的事件
      * Update the events for a given file descriptor
      */
     void setInterest(int fd, int mask) {
@@ -236,6 +222,8 @@ class EPollArrayWrapper {
         // previous registration.
         synchronized (updateLock) {
             assert !registered.get(fd);
+            //EpollWrapper的add方法内部调用了setUpdateEvents方法，并且把第二个参数事件类型（events）设置为0。
+            // 在setUpdateEvents中，把fd作为数组的下表，值为事件类型。如果fd大于64*1024,则把fd和事件类型存入eventsHigh中
             setUpdateEvents(fd, (byte)0, true);
         }
     }
@@ -265,7 +253,11 @@ class EPollArrayWrapper {
     }
 
     int poll(long timeout) throws IOException {
+        //updateRegistrations()方法会将已经注册到该selector的fd和事件
+        // (eventsLow或eventsHigh)通过调用epollCtl(epfd, opcode, fd, events),注册到linux系统中
         updateRegistrations();
+
+        //epollWait就会调用linux底层的epoll_wait方法，并返回在epoll_wait期间有事件触发的entry的个数
         updated = epollWait(pollArrayAddress, NUM_EPOLLEVENTS, timeout, epfd);
         for (int i=0; i<updated; i++) {
             if (getDescriptor(i) == incomingInterruptFD) {
@@ -285,17 +277,21 @@ class EPollArrayWrapper {
             int j = 0;
             while (j < updateCount) {
                 int fd = updateDescriptors[j];
+                // 从保存的eventsLow和eventsHigh里取出事件
                 short events = getUpdateEvents(fd);
                 boolean isRegistered = registered.get(fd);
                 int opcode = 0;
 
                 if (events != KILLED) {
+                    // 判断操作类型以传给epoll_ctl
+                    // 没有指定EPOLLET事件类型
                     if (isRegistered) {
                         opcode = (events != 0) ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
                     } else {
                         opcode = (events != 0) ? EPOLL_CTL_ADD : 0;
                     }
                     if (opcode != 0) {
+                        // 熟悉的epoll_ctl
                         epollCtl(epfd, opcode, fd, events);
                         if (opcode == EPOLL_CTL_ADD) {
                             registered.set(fd);
@@ -334,8 +330,30 @@ class EPollArrayWrapper {
         init();
     }
 
+    /**
+     * 创建一个epoll fd,并开辟epoll自己的内核高速cache区，建立红黑树，分配好想要的size的内存对象，建立一个list链表，用于存储准备就绪的事件。
+     * @return
+     */
     private native int epollCreate();
+
+    /**
+     * 对新旧事件进行新增修改或者删除
+     * @param epfd
+     * @param opcode
+     * @param fd
+     * @param events
+     */
     private native void epollCtl(int epfd, int opcode, int fd, int events);
+
+    /**
+     * 等待内核返回IO事件
+     * @param pollAddress
+     * @param numfds
+     * @param timeout
+     * @param epfd
+     * @return
+     * @throws IOException
+     */
     private native int epollWait(long pollAddress, int numfds, long timeout,
                                  int epfd) throws IOException;
     private static native int sizeofEPollEvent();

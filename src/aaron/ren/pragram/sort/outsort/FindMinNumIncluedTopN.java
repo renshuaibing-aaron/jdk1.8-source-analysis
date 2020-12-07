@@ -6,10 +6,19 @@ import java.io.FileReader;
 import java.io.IOException;
 
 /**
+ *
+ * 处理海量数据一般用堆比较合适
+ * 适当的建立 大根堆 小根堆
  * 从海量数据中查找出前k个最大值，精确时间复杂度为：K + (n - K) * lgk,空间复杂度为 O（k）,目前为所有算法中最优算法
  *
  */
 public class FindMinNumIncluedTopN {
+
+    public static void main(String[] args) throws IOException {
+        String filePath = "E:\\HR-code\\20190116\\code\\jdk1.8-source-analysis\\paixu.txt";
+        findMinNumIncluedTopN(6, filePath);
+    }
+
     /**
      * 从海量数据中查找出前k个最大值
      *
@@ -17,13 +26,13 @@ public class FindMinNumIncluedTopN {
      * @return
      * @throws IOException
      */
-    public int[] findMinNumIncluedTopN(int k) throws IOException {
+    public static int[] findMinNumIncluedTopN(int k, String filePath) throws IOException {
         Long start = System.nanoTime();
 
         int[] array = new int[k];
         int index = 0;
         // 从文件导入海量数据
-        BufferedReader reader = new BufferedReader(new FileReader(new File("F:/number.txt")));
+        BufferedReader reader = new BufferedReader(new FileReader(new File(filePath)));
         String text = null;
         // 先读出前n条数据,构建堆
         do {
@@ -35,17 +44,15 @@ public class FindMinNumIncluedTopN {
         } while (text != null && index <= k - 1);
 
         MinHeap heap = new MinHeap(array);//初始化堆
-        for (int i : heap.heap) {
+      /*  for (int i : heap.heap) {
             System.out.print(i + " ");
-        }
+        }*/
 
         heap.BuildMinHeap();//构建小顶堆
-        System.out.println();
         System.out.println("构建小顶堆之后:");
-        for (int i : heap.heap) {
+       /* for (int i : heap.heap) {
             System.out.print(i + " ");
-        }
-        System.out.println();
+        }*/
         // 遍历文件中剩余的n（文件数据容量，假设为无限大）-k条数据，如果读到的数据比heap[0]大，就替换之，同时更新堆
         while (text != null) {
             text = reader.readLine();
@@ -68,12 +75,10 @@ public class FindMinNumIncluedTopN {
         return heap.heap;
     }
 
-
     /**
      * 大顶堆
-
      */
-    public class MaxHeap {
+    private static class MaxHeap {
         int[] heap;
         int heapsize;
 
@@ -137,15 +142,10 @@ public class FindMinNumIncluedTopN {
         }
     }
 
-
     /**
      * 小顶堆
-     *
-     * @author TongXueQiang
-     * @date 2016/03/09
-     * @since JDK 1.7
      */
-    public class MinHeap {
+    private static class MinHeap {
         int[] heap;
         int heapsize;
 
@@ -185,12 +185,14 @@ public class FindMinNumIncluedTopN {
             int r = 2 * i + 2;
             int min;
 
-            if (l < heapsize && heap[l] < heap[i])
+            if (l < heapsize && heap[l] < heap[i]) {
                 min = l;
-            else
+            } else {
                 min = i;
-            if (r < heapsize && heap[r] < heap[min])
+            }
+            if (r < heapsize && heap[r] < heap[min]) {
                 min = r;
+            }
             if (min == i || min >= heapsize)// 如果largest等于i说明i是最大元素
                 // largest超出heap范围说明不存在比i节点大的子女
                 return;
@@ -220,7 +222,6 @@ public class FindMinNumIncluedTopN {
         }
 
     }
-
 
 }
 

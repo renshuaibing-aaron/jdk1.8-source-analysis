@@ -402,13 +402,13 @@ public class CopyOnWriteArrayList<E>
      */
     public boolean add(E e) {
         final ReentrantLock lock = this.lock;
-        lock.lock();
+        lock.lock(); // 加锁
         try {
             Object[] elements = getArray();
             int len = elements.length;
-            Object[] newElements = Arrays.copyOf(elements, len + 1);
+            Object[] newElements = Arrays.copyOf(elements, len + 1);   // 拷贝新数组
             newElements[len] = e;
-            setArray(newElements);
+            setArray(newElements);  // 释放锁
             return true;
         } finally {
             lock.unlock();
@@ -416,6 +416,8 @@ public class CopyOnWriteArrayList<E>
     }
 
     /**
+     *
+     * todo  注意这个修改数组的时候加了锁 保证同步 避免多线程copy出多个副本
      * Inserts the specified element at the specified position in this
      * list. Shifts the element currently at that position (if any) and
      * any subsequent elements to the right (adds one to their indices).

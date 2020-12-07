@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1996, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package java.io;
 
 import java.io.ObjectStreamClass.WeakClassKey;
@@ -339,6 +314,7 @@ public class ObjectOutputStream
      * @throws  IOException Any exception thrown by the underlying
      *          OutputStream.
      */
+    @Override
     public final void writeObject(Object obj) throws IOException {
         if (enableOverride) {
             writeObjectOverride(obj);

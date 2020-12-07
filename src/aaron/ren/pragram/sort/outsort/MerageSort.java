@@ -9,9 +9,12 @@ import java.util.List;
  * https://blog.csdn.net/daaikuaichuan/article/details/80641757
  * https://blog.csdn.net/weixin_39296576/article/details/90403996
  * https://blog.csdn.net/xushiyu1996818/article/details/84936832
+ *
+ * 大数据怎么利用归并排序
+ * 大数据怎么利用堆 排序
  */
 public class MerageSort {
-    final static int SIZE = 10000;//这里是定义我们将源文件中以10000条记录作为单位进行分割。
+    final static int SIZE = 4;//这里是定义我们将源文件中以10000条记录作为单位进行分割。
 
     public static void main(String[] args) throws IOException {
         File file = new File("paixu.txt");
@@ -42,7 +45,7 @@ public class MerageSort {
     //sortAndSave是将nums中前index条记录先快速排序，然后存入文件，最好将文件名返回
     public static String sortAndSave(int[] nums, int size) throws IOException {
         quicksort.sort(nums, 0, size - 1);
-        String fileName = "sort" + System.nanoTime() + ".txt";
+        String fileName = "sortdivexe" + System.nanoTime() + ".txt";
         File rf = new File(fileName);
         BufferedWriter bw = new BufferedWriter(new FileWriter(rf));
         for (int num : nums) {
@@ -54,20 +57,24 @@ public class MerageSort {
 
     /**
      * 并归排序
+     * todo  这里是怎么实现的呢
      *
      * @param fileNames
      * @throws IOException
      */
     public static void mergeSort(List<String> fileNames) throws IOException {
         List<String> tempFileNames = new ArrayList<>();
+
+        //遍历临时文件  注意 每个临时文件已经排好序了  4
         for (int i = 0; i < fileNames.size(); i++) {
-            String resultFileName = "sort" + System.nanoTime() + ".txt";
+            String resultFileName = "sortmerge"+i +"time"+ System.nanoTime() + ".txt";
             File resultFile = new File(resultFileName);
             tempFileNames.add(resultFileName);
             BufferedWriter bw = new BufferedWriter(new FileWriter(resultFile));
 
             File file1 = new File(fileNames.get(i++));
             BufferedReader br1 = new BufferedReader(new FileReader(file1));
+
             if (i < fileNames.size()) {
                 File file2 = new File(fileNames.get(i));
                 BufferedReader br2 = new BufferedReader(new FileReader(file2));
@@ -136,6 +143,7 @@ public class MerageSort {
         }
         int size = tempFileNames.size();
         if (size > 1) {
+            System.out.println("guibing");
             mergeSort(tempFileNames);
         } else if (size == 1) {
             File file = new File(tempFileNames.get(0));

@@ -138,15 +138,19 @@ public abstract class SelectorProvider {
      */
     public static SelectorProvider provider() {
         synchronized (lock) {
-            if (provider != null)
+            if (provider != null) {
                 return provider;
+            }
             return AccessController.doPrivileged(
                 new PrivilegedAction<SelectorProvider>() {
+                    @Override
                     public SelectorProvider run() {
-                            if (loadProviderFromProperty())
+                            if (loadProviderFromProperty()) {
                                 return provider;
-                            if (loadProviderAsService())
+                            }
+                            if (loadProviderAsService()) {
                                 return provider;
+                            }
                             provider = sun.nio.ch.DefaultSelectorProvider.create();
                             return provider;
                         }

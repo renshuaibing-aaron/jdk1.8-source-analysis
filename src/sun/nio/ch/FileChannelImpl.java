@@ -22,10 +22,10 @@ import java.util.List;
 import sun.misc.Cleaner;
 import sun.security.action.GetPropertyAction;
 
-public class FileChannelImpl
-    extends FileChannel
+public class FileChannelImpl    extends FileChannel
 {
     // Memory allocation size for mapping buffers
+    //通过native函数initIDs初始化
     private static final long allocationGranularity;
 
     // Used to make native read and write calls
@@ -118,18 +118,28 @@ public class FileChannelImpl
 
     }
 
+    /**
+     * 将字节序列从此通道读入给定的缓冲区。尝试最多从该通道中读取 r 个字节，
+     * 其中 r 是调用此方法时缓冲区中剩余的字节数，即 dst.remaining()。返回：读取的字节数，可能为零，如果该通道已到达流的末尾，则返回 -1
+     * @param dst
+     * @return
+     * @throws IOException
+     */
+    @Override
     public int read(ByteBuffer dst) throws IOException {
         ensureOpen();
-        if (!readable)
+        if (!readable) {
             throw new NonReadableChannelException();
+        }
         synchronized (positionLock) {
             int n = 0;
             int ti = -1;
             try {
                 begin();
                 ti = threads.add();
-                if (!isOpen())
+                if (!isOpen()) {
                     return 0;
+                }
                 do {
                     n = IOUtil.read(fd, dst, -1, nd);
                 } while ((n == IOStatus.INTERRUPTED) && isOpen());
@@ -170,18 +180,27 @@ public class FileChannelImpl
         }
     }
 
+    /**
+     * 将字节序列从给定的缓冲区写入此通道
+     * @param src
+     * @return
+     * @throws IOException
+     */
+    @Override
     public int write(ByteBuffer src) throws IOException {
         ensureOpen();
-        if (!writable)
+        if (!writable) {
             throw new NonWritableChannelException();
+        }
         synchronized (positionLock) {
             int n = 0;
             int ti = -1;
             try {
                 begin();
                 ti = threads.add();
-                if (!isOpen())
+                if (!isOpen()) {
                     return 0;
+                }
                 do {
                     n = IOUtil.write(fd, src, -1, nd);
                 } while ((n == IOStatus.INTERRUPTED) && isOpen());
@@ -829,6 +848,8 @@ public class FileChannelImpl
     private static final int MAP_RW = 1;
     private static final int MAP_PV = 2;
 
+  //把文件映射到虚拟内存，并返回逻辑地址address
+    @Override
     public MappedByteBuffer map(MapMode mode, long position, long size)
         throws IOException
     {
@@ -902,9 +923,15 @@ public class FileChannelImpl
                 long mapPosition = position - pagePosition;
                 mapSize = size + pagePosition;
                 try {
+                    // todo 最终map通过native函数map0完成文件的映射工作
+                    //  map0()函数返回一个地址address，这样就无需调用read或write方法对文件进行读写，
+                    //  通过address就能够操作文件。底层采用unsafe.getByte方法，通过（address + 偏移量）获取指定内存的数据
+                    //
                     // If map0 did not throw an exception, the address is valid
                     addr = map0(imode, mapPosition, mapSize);
                 } catch (OutOfMemoryError x) {
+
+                    //如果第一次文件映射导致OOM，则手动触发垃圾回收，休眠100ms后再次尝试映射，如果失败，则抛出异常。
                     // An OutOfMemoryError may indicate that we've exhausted
                     // memory so force gc and re-attempt map
                     System.gc();
@@ -937,6 +964,7 @@ public class FileChannelImpl
             int isize = (int)size;
             Unmapper um = new Unmapper(addr, mapSize, isize, mfd);
             if ((!writable) || (imode == MAP_RO)) {
+                //通过newMappedByteBuffer方法初始化MappedByteBuffer实例，不过其最终返回的是DirectByteBuffer的实例
                 return Util.newMappedByteBufferR(isize,
                                                  addr + pagePosition,
                                                  mfd,

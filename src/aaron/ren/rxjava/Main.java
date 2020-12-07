@@ -9,7 +9,7 @@ import io.reactivex.schedulers.Schedulers;
 public class Main {
 
     public static void main(String[] args) {
-        Observable.create(new ObservableOnSubscribe<String>() {
+ /*       Observable.create(new ObservableOnSubscribe<String>() {
             @Override
             public void subscribe(ObservableEmitter<String> emitter) throws Exception {
                 String s = "1234";
@@ -23,6 +23,8 @@ public class Main {
             }
         }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe();
+                .subscribe();*/
     }
+
+
 }

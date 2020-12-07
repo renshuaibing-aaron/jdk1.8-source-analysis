@@ -3,7 +3,11 @@
  解决办法 用读写锁 (为什么不用concurrentHash 可以用 但是在代码里面不只有一个资源 , 对于其他的资源怎么访问？还不是得用锁)
   特别是   在注册中心的用的比较常见
   
-2.ReentrantReadWriteLock的核心原理  是AQS  用sate的高16位用来表示读锁的线程数  低16位表示写锁线程的进入次数
+2.ReentrantReadWriteLock的核心原理 
+ 看代码可以知道读写锁表面来看是两个锁一个读锁 一个写锁 其实本质是一个锁 两个视图 其实本质是一个syn 也就是读写锁共用一个syn
+ 是AQS  
+ 用sate的高16位用来表示读锁的线程数 
+  低16位表示写锁线程的进入次数
 
 看源码可以知道 读写锁里面有个 final Sync sync; 变量在new ReentrantReadWriteLock 时候进行初始化 然后
 读写锁里面有两个锁(读写锁读写锁用的是sync这个变量需要 对其进行操作)

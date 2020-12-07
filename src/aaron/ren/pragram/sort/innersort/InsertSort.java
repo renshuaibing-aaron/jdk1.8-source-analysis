@@ -1,7 +1,16 @@
 package aaron.ren.pragram.sort.innersort;
 
+import java.util.Arrays;
+
 public class InsertSort {
-    public void insertSort(int[] a){
+
+    public static void main(String[] args) {
+        int[] nums={5,4,3,2,1};
+        insertSort(nums);
+        System.out.println(Arrays.toString(nums));
+    }
+
+    public static  void insertSort(int[] a){
         int length=a.length;//数组长度，将这个提取出来是为了提高速度。
         int insertNum;//要插入的数
         for(int i=1;i<length;i++){//插入的次数

@@ -3,6 +3,18 @@ package java.nio;
 import java.util.Spliterator;
 
 /**
+ * todo 特定基本类型数据的容器
+ *   这个解释说的很明确 用于存放基本类型  所以对于每个非 boolean 基本类型，此类都有一个子类与之对应
+ *   ByteBuffer-->实现类包括"HeapByteBuffer"和"DirectByteBuffer"
+ *      非直接缓冲区：通过 allocate() 方法分配缓冲区，将缓冲区建立在 JVM 的内存
+ *     直接缓存区：是在虚拟机内存外开辟的内存，IO操作直接进行，不再对其进行复制，但创建和销毁开销大
+ *  CharBuffer
+ *  DoubleBuffer
+ *  FloatBuffer
+ *  IntBuffer
+ *  LongBuffer
+ *  ShortBuffer
+ *  MappedByteBuffer
  * A container for data of a specific primitive type.
  *
  * <p> A buffer is a linear, finite sequence of elements of a specific
@@ -158,6 +170,7 @@ public abstract class Buffer {
         Spliterator.SIZED | Spliterator.SUBSIZED | Spliterator.ORDERED;
 
     // Invariants: mark <= position <= limit <= capacity
+    //用于备份当前的position
     private int mark = -1;
 
     //指数组中下一个将要被读或者将要被写的元素的索引
@@ -167,10 +180,12 @@ public abstract class Buffer {
     //limit是第一个不能被读,或者第一个不能被写的元素的index
     private int limit;
 
-    //Buffer中元素的个数
+    //Buffer中元素的个数 缓冲区的容量 是它所包含的元素的数量。缓冲区的容量不能为负并且不能更改
     private int capacity;
 
-    // Used only by direct buffers
+    //DirectByteBuffer通过unsafe.allocateMemory申请堆外内存，并在ByteBuffer的address变量中维护指向该内存的地址。
+    //unsafe.setMemory(base, size, (byte) 0)方法把新申请的内存数据清零
+    // todo  Used only by direct buffers
     // NOTE: hoisted here for speed in JNI GetDirectBufferAddress
     long address;
 

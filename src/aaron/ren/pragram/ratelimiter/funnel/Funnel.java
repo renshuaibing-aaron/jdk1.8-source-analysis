@@ -9,10 +9,10 @@ public class Funnel {
 
     private static final long NANO = 1000000000;
 
-    private long capacity;
-    private long leftQuota;
-    private long leakingTs;
-    private int rate;
+    private long capacity;  //桶的容量
+    private long leftQuota;//当前桶内剩余的请求数
+    private long leakingTs; //上一次请求的时间
+    private int rate;  //流出的速率 注意这个和令牌桶的区别
 
     /**
      * 构造函数

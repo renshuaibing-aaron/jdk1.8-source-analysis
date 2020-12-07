@@ -5,17 +5,23 @@ import java.util.Arrays;
 import static com.sun.tools.javac.jvm.ByteCodes.arraylength;
 
 /**
+ * 解决top k的问题用堆来解决
  * 堆排序
  * https://blog.csdn.net/runrun117/article/details/80288237
  */
 public class HeapSort {
-    public void heapSort(int[] a) {
+
+    public static void main(String[] args) {
+        int[] nums={1,2,5,6,4,3,8,7};
+        heapSort(nums);
+    }
+
+    public static void heapSort(int[] a) {
         System.out.println("开始排序");
         int arrayLength = a.length;
         //循环建堆
-        for (int i = 0; i < arraylength - 1; i++) {
+        for (int i = 0; i <arraylength - 1; i++) {
             //建堆
-
             buildMaxHeap(a, arrayLength - 1 - i);
             //交换堆顶和最后一个元素
             swap(a, 0, arrayLength - 1 - i);
@@ -23,16 +29,19 @@ public class HeapSort {
         }
     }
 
-    private void swap(int[] data, int i, int j) {
-        // TODO Auto-generated method stub
+    private static void swap(int[] data, int i, int j) {
         int tmp = data[i];
         data[i] = data[j];
         data[j] = tmp;
     }
 
-    //对data数组从0到lastIndex建大顶堆
-    private void buildMaxHeap(int[] data, int lastIndex) {
-        // TODO Auto-generated method stub
+
+    /**
+     * 对data数组从0到lastIndex建大顶堆
+     * @param data
+     * @param lastIndex
+     */
+    private static void buildMaxHeap(int[] data, int lastIndex) {
         //从lastIndex处节点（最后一个节点）的父节点开始
         for (int i = (lastIndex - 1) / 2; i >= 0; i--) {
             //k保存正在判断的节点

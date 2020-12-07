@@ -3,13 +3,13 @@ Oracle 中union的用法
 
   ```sql
  declare 
-???????? cursor cur_test is select widgetid from t_widget; 
-???? begin 
-???????? for c in cur_test loop 
-?????????? insert into t_tag (tagid,widgetid,userid,tagname,tagdate) values(s_tag_tagid.nextval,c.widgetid,'15895829126','nanjing',sysdate); 
-???????? end loop; 
-???? commit; 
-???? end; 
+ cursor cur_test is select widgetid from t_widget; 
+ begin 
+ for c in cur_test loop 
+ insert into t_tag (tagid,widgetid,userid,tagname,tagdate) values(s_tag_tagid.nextval,c.widgetid,'15895829126','nanjing',sysdate); 
+ end loop; 
+ commit; 
+ end; 
 ```
 
 

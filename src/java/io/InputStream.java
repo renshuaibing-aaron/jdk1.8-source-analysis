@@ -1,6 +1,7 @@
 package java.io;
 
 /**
+ * 字节输入流的父类
  * This abstract class is the superclass of all classes representing
  * an input stream of bytes.
  *
@@ -21,6 +22,7 @@ public abstract class InputStream implements Closeable {
 
     // MAX_SKIP_BUFFER_SIZE is used to determine the maximum buffer size to
     // use when skipping.
+    // 该变量用于确定在skip方法中使用的最大缓存数组大小。
     private static final int MAX_SKIP_BUFFER_SIZE = 2048;
 
     /**
@@ -33,6 +35,8 @@ public abstract class InputStream implements Closeable {
      *
      * <p> A subclass must provide an implementation of this method.
      *
+     * 从输入流中读取下一字节数据。返回的字节值为一个范围在0-255之间的int数。若由于到达流的尾部而没有字节可获取，则返回-1
+     * 直到数据可达，检测到流的末尾或者抛出一个异常，该方法才停止
      * @return     the next byte of data, or <code>-1</code> if the end of the
      *             stream is reached.
      * @exception  IOException  if an I/O error occurs.
